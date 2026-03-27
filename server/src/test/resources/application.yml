@@ -1,0 +1,65 @@
+spring:
+  profiles:
+    active: test
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: test
+    import:
+      - optional:file:.env-local[.properties]
+
+  cloud:
+    aws:
+      region:
+        static: ap-northeast-2
+      s3:
+        bucket: eatda-storage-test
+
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:database
+    username: sa
+    password:
+
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          batch_size: 100
+        order_inserts: true
+        order_updates: true
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false
+
+  flyway:
+    enabled: false
+
+  sql:
+    init:
+      mode: never
+
+cors:
+  origin: "https://example.eat-da.com"
+
+jwt:
+  secret-key: ${TEST_JWT_SECRET_KEY}
+  access-token-expiration: 1h
+  refresh-token-expiration: 1d
+
+oauth:
+  client-id: abcd1234
+  redirect-path: /callback
+  allowed-origins:
+    - "https://example.eat-da.com"
+
+kakao:
+  api-key: ablselfsgbwrlgrwrlhknwnkefknkwelfk
+
+cdn:
+  base-url: "http://localhost:8080"

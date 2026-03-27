@@ -1,0 +1,23 @@
+spring:
+  profiles:
+    active: local
+
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          batch_size: 100
+        order_inserts: true
+        order_updates: true
+    defer-datasource-initialization: false
+    open-in-view: false
+
+springdoc:
+  swagger-ui:
+    path: /docs/swagger
+    url: /docs/openapi3.yaml
+    disable-swagger-default-url: true
+    persist-authorization: true
+    display-request-duration: true
+    default-model-expand-depth: 10

@@ -1,0 +1,153 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.0'
+    id 'io.spring.dependency-management' version '1.1.7'
+
+    // Rest Docs & Swagger UI
+    id 'com.epages.restdocs-api-spec' version '0.18.2'
+    id 'org.hidetake.swagger.generator' version '2.18.2'
+
+    // Jacoco, sonarcloud
+    id 'jacoco'
+    id("org.sonarqube") version "6.2.0.5505"
+}
+
+group = 'net.eatda'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.12"
+}
+
+sonarqube {
+    properties {
+        property "sonar.projectKey", "YAPP-Github_26th-Web-Team-1-BE"
+        property "sonar.organization", "yapp-github"
+        property "sonar.host.url", "https://sonarcloud.io"
+        property 'sonar.sourceEncoding', 'UTF-8'
+        property 'sonar.java.coveragePlugin', 'jacoco'
+        property "sonar.coverage.jacoco.xmlReportPaths",
+                layout.buildDirectory.file("reports/jacoco/test/jacocoTestReport.xml").get().asFile.path
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    set('snippetsDir', file("build/generated-snippets"))
+}
+
+dependencies {
+    // Spring boot
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // DB
+    runtimeOnly 'com.h2database:h2'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-mysql'
+
+    // JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-gson:0.11.5'
+
+    // Test
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'io.rest-assured:rest-assured:5.5.0'
+
+    // Documentation
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
+    testImplementation 'org.springframework.restdocs:spring-restdocs-restassured'
+    testImplementation 'com.epages:restdocs-api-spec-mockmvc:0.18.2'
+    testImplementation 'com.epages:restdocs-api-spec-restassured:0.18.2'
+
+    // aws
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter-parameter-store:3.2.1'
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:3.2.1'
+    implementation 'software.amazon.awssdk:s3:2.31.77'
+
+    //log
+    implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
+}
+
+bootJar {
+    dependsOn("openapi3")
+}
+
+tasks.named('test', Test) {
+    outputs.dir snippetsDir
+    useJUnitPlatform()
+    finalizedBy tasks.jacocoTestReport
+}
+
+tasks.named('jacocoTestReport', JacocoReport) {
+    dependsOn test
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+    sourceDirectories.setFrom(files(sourceSets.main.allSource.srcDirs))
+    classDirectories.setFrom(files(sourceSets.main.output))
+
+    executionData.setFrom(
+            layout.buildDirectory.file("jacoco/test.exec").map { it.asFile }
+    )
+}
+
+generateSwaggerUI {
+    dependsOn("openapi3")
+
+    delete(fileTree("src/main/resources/static/docs/") {
+        exclude(".gitkeep")
+    })
+    copy {
+        from("build/resources/main/static/docs/")
+        into("src/main/resources/static/docs/")
+    }
+}
+
+openapi3 {
+    servers = [
+            {
+                url = "https://api-dev.eatda.net"
+                description = "Develop Server"
+            },
+            {
+                url = "https://api.eatda.net"
+                description = "Production Server"
+            },
+            {
+                url = "http://localhost:8080"
+                description = "Local Server"
+            }
+    ]
+    title = "EatDa API"
+    description = "EatDa API 명세서"
+    version = "0.0.1"
+    format = "yaml"
+    outputDirectory = "build/resources/main/static/docs"
+}
