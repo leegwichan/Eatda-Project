@@ -44,6 +44,6 @@ public class JwtProperties {
     }
 
     public SecretKey getSecretKey() {
-        return Keys.hmacShaKeyFor(Base64.getDecoder().decode(secretKey));
+        return Keys.hmacShaKeyFor(secretKey);
     }
 }

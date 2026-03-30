@@ -2,10 +2,11 @@ package eatda.controller.store;
 
 import eatda.domain.store.Store;
 import java.util.List;
+import org.springframework.lang.Nullable;
 
 public record StorePreviewResponse(
         long id,
-        String imageUrl,
+        @Nullable String imageUrl,
         String name,
         String district,
         String neighborhood,
@@ -13,7 +14,7 @@ public record StorePreviewResponse(
         List<String> cheerDescriptions
 ) {
 
-    public StorePreviewResponse(Store store, String imageUrl) {
+    public StorePreviewResponse(Store store, @Nullable String imageUrl) {
         this(
                 store.getId(),
                 imageUrl,

@@ -24,13 +24,16 @@ public class FileClient {
     private final S3Client s3Client;
     private final String bucket;
     private final S3Presigner s3Presigner;
+    private final String cdnBaseUrl;
 
     public FileClient(S3Client s3Client,
                       @Value("${spring.cloud.aws.s3.bucket}") String bucket,
-                      S3Presigner s3Presigner) {
+                      S3Presigner s3Presigner,
+                      @Value("${cdn.base-url}") String cdnBaseUrl) {
         this.s3Client = s3Client;
         this.bucket = bucket;
         this.s3Presigner = s3Presigner;
+        this.cdnBaseUrl = cdnBaseUrl;
     }
 
     public String generateUploadPresignedUrl(String fileKey, Duration signatureDuration) {
@@ -76,6 +79,10 @@ public class FileClient {
             return;
         }
         keys.forEach(this::deleteObject);
+    }
+
+    public String getImageUrl(String imageKey) {
+        return "https://" + cdnBaseUrl + "/" + imageKey;
     }
 
     private String extractFileName(String fullKey) {

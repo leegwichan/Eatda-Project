@@ -45,3 +45,7 @@ out/
 .terraform/
 *.tfstate
 *.tfstate.*
+
+### docker run file ###
+/src/main/resources/secret-local-docker.yml
+/src/main/resources/db/init.sql

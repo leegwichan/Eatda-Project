@@ -9,13 +9,13 @@ public record StoryImageResponse(
         long fileSize,
         String url
 ) {
-    public StoryImageResponse(StoryImage storyImage, String cdnBaseUrl) {
+    public StoryImageResponse(StoryImage storyImage, String imageUrl) {
         this(
                 storyImage.getImageKey(),
                 storyImage.getOrderIndex(),
                 storyImage.getContentType(),
                 storyImage.getFileSize(),
-                "https://" + cdnBaseUrl + "/" + storyImage.getImageKey()
+                imageUrl
         );
     }
 }

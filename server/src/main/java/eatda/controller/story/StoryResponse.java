@@ -1,7 +1,6 @@
 package eatda.controller.story;
 
 import eatda.domain.story.Story;
-import java.util.Comparator;
 import java.util.List;
 import org.springframework.lang.Nullable;
 
@@ -17,7 +16,8 @@ public record StoryResponse(
         long memberId,
         String memberNickname
 ) {
-    public StoryResponse(Story story, Long storeId, String cdnBaseUrl) {
+
+    public StoryResponse(Story story, @Nullable Long storeId, List<StoryImageResponse> images) {
         this(
                 storeId,
                 story.getStoreKakaoId(),
@@ -26,10 +26,7 @@ public record StoryResponse(
                 story.getAddressDistrict(),
                 story.getAddressNeighborhood(),
                 story.getDescription(),
-                story.getImages().stream()
-                        .map(img -> new StoryImageResponse(img, cdnBaseUrl))
-                        .sorted(Comparator.comparingLong(StoryImageResponse::orderIndex))
-                        .toList(),
+                images,
                 story.getMember().getId(),
                 story.getMember().getNickname()
         );

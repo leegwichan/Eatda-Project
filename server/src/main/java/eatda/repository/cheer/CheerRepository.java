@@ -6,9 +6,10 @@ import eatda.domain.member.Member;
 import eatda.domain.store.District;
 import eatda.domain.store.Store;
 import eatda.domain.store.StoreCategory;
+import eatda.exception.BusinessErrorCode;
+import eatda.exception.BusinessException;
 import jakarta.persistence.criteria.JoinType;
 import java.util.List;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -17,9 +18,14 @@ import org.springframework.lang.Nullable;
 
 public interface CheerRepository extends JpaRepository<Cheer, Long> {
 
-    Page<Cheer> findAllByStoreOrderByCreatedAtDesc(Store store, PageRequest pageRequest);
+    default Cheer getByIdOrThrow(long cheerId) {
+        return findById(cheerId)
+                .orElseThrow(() -> new BusinessException(BusinessErrorCode.CHEER_NOT_FOUND));
+    }
 
-    default Page<Cheer> findAllByConditions(@Nullable StoreCategory category,
+    List<Cheer> findAllByStoreOrderByCreatedAtDesc(Store store, PageRequest pageRequest);
+
+    default List<Cheer> findAllByConditions(@Nullable StoreCategory category,
                                             List<CheerTagName> cheerTagNames,
                                             List<District> districts, Pageable pageable) {
         Specification<Cheer> spec = createSpecification(category, cheerTagNames, districts);
@@ -48,7 +54,7 @@ public interface CheerRepository extends JpaRepository<Cheer, Long> {
         return spec;
     }
 
-    Page<Cheer> findAll(Specification<Cheer> specification, Pageable pageable);
+    List<Cheer> findAll(Specification<Cheer> specification, Pageable pageable);
 
     int countByMember(Member member);
 

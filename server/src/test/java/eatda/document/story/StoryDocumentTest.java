@@ -142,7 +142,7 @@ public class StoryDocumentTest extends BaseDocumentTest {
                             List.of(new StoryImageResponse("2.png", 1, "image/png", 67890L, "https://cdn.test/2.png"))
                     )
             ));
-            doReturn(response).when(storyService).getPagedStoryPreviews(size);
+            doReturn(response).when(storyService).getStoryPreviews(size);
 
             var document = document("story/get-stories", 200)
                     .request(requestDocument)
@@ -279,7 +279,7 @@ public class StoryDocumentTest extends BaseDocumentTest {
                             "맥도날드"
                     )
             ));
-            doReturn(response).when(storyService).getPagedStoryByMemberId(anyLong(), eq(page), eq(size));
+            doReturn(response).when(storyService).getStoriesByMemberId(anyLong(), eq(page), eq(size));
 
             var document = document("story/get-stories-by-member-id", 200)
                     .request(requestDocument)
@@ -303,7 +303,7 @@ public class StoryDocumentTest extends BaseDocumentTest {
             int page = 0;
             int size = 5;
             doThrow(new BusinessException(errorCode))
-                    .when(storyService).getPagedStoryByMemberId(anyLong(), eq(page), eq(size));
+                    .when(storyService).getStoriesByMemberId(anyLong(), eq(page), eq(size));
 
             var document = document("story/get-stories-by-member-id", errorCode)
                     .request(requestDocument)
@@ -365,7 +365,7 @@ public class StoryDocumentTest extends BaseDocumentTest {
                             "준환"
                     )
             ));
-            doReturn(response).when(storyService).getPagedStoryDetails(kakaoId, size);
+            doReturn(response).when(storyService).getStoriesDetails(kakaoId, size);
 
             var document = document("story/get-stories-by-kakao-id", 200)
                     .request(requestDocument)
@@ -384,7 +384,7 @@ public class StoryDocumentTest extends BaseDocumentTest {
         void 카카오_ID로_스토리_목록_조회_실패(BusinessErrorCode errorCode) {
             String kakaoId = "nonexistent";
             int size = 5;
-            doThrow(new BusinessException(errorCode)).when(storyService).getPagedStoryDetails(kakaoId, size);
+            doThrow(new BusinessException(errorCode)).when(storyService).getStoriesDetails(kakaoId, size);
 
             var document = document("story/get-stories-by-kakao-id", errorCode)
                     .request(requestDocument)

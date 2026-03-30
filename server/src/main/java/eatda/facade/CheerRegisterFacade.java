@@ -31,7 +31,7 @@ public class CheerRegisterFacade {
         Cheer cheer = creationResult.cheer();
 
         if (request.images() == null || request.images().isEmpty()) {
-            return cheerService.getCheerResponse(cheer.getId());
+            return cheerService.getCheer(cheer.getId());
         }
 
         List<String> permanentKeys = Collections.emptyList();
@@ -51,7 +51,7 @@ public class CheerRegisterFacade {
             throw e;
         }
 
-        return cheerService.getCheerResponse(cheer.getId());
+        return cheerService.getCheer(cheer.getId());
     }
 
     private List<CheerRegisterRequest.UploadedImageDetail> sortImages(

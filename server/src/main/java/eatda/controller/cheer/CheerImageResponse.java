@@ -9,13 +9,13 @@ public record CheerImageResponse(
         long fileSize,
         String url
 ) {
-    public CheerImageResponse(CheerImage cheerImage, String cdnBaseUrl) {
+    public CheerImageResponse(CheerImage cheerImage, String imageUrl) {
         this(
                 cheerImage.getImageKey(),
                 cheerImage.getOrderIndex(),
                 cheerImage.getContentType(),
                 cheerImage.getFileSize(),
-                "https://" + cdnBaseUrl + "/" + cheerImage.getImageKey()
+                imageUrl
         );
     }
 }
