@@ -41,6 +41,9 @@ spring:
   flyway:
     enabled: false
 
+logging:
+  config: classpath:logback-local-docker.xml
+
 jwt:
   access-token-expiration: 1h
   refresh-token-expiration: 1d
