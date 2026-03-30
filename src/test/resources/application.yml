@@ -8,8 +8,6 @@ spring:
   config:
     activate:
       on-profile: test
-    import:
-      - optional:file:.env-local[.properties]
 
   cloud:
     aws:
@@ -48,7 +46,7 @@ cors:
   origin: "https://example.eat-da.com"
 
 jwt:
-  secret-key: ${TEST_JWT_SECRET_KEY}
+  secret-key: ablselfsgbwrlgrwrlhknwnkefknkwelfkknwnkefknkwelfk
   access-token-expiration: 1h
   refresh-token-expiration: 1d
 
