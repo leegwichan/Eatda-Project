@@ -10,7 +10,6 @@ import eatda.exception.BusinessErrorCode;
 import eatda.exception.BusinessException;
 import jakarta.persistence.criteria.JoinType;
 import java.util.List;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -24,9 +23,9 @@ public interface CheerRepository extends JpaRepository<Cheer, Long> {
                 .orElseThrow(() -> new BusinessException(BusinessErrorCode.CHEER_NOT_FOUND));
     }
 
-    Page<Cheer> findAllByStoreOrderByCreatedAtDesc(Store store, PageRequest pageRequest);
+    List<Cheer> findAllByStoreOrderByCreatedAtDesc(Store store, PageRequest pageRequest);
 
-    default Page<Cheer> findAllByConditions(@Nullable StoreCategory category,
+    default List<Cheer> findAllByConditions(@Nullable StoreCategory category,
                                             List<CheerTagName> cheerTagNames,
                                             List<District> districts, Pageable pageable) {
         Specification<Cheer> spec = createSpecification(category, cheerTagNames, districts);
@@ -55,7 +54,7 @@ public interface CheerRepository extends JpaRepository<Cheer, Long> {
         return spec;
     }
 
-    Page<Cheer> findAll(Specification<Cheer> specification, Pageable pageable);
+    List<Cheer> findAll(Specification<Cheer> specification, Pageable pageable);
 
     int countByMember(Member member);
 

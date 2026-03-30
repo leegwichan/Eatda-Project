@@ -16,7 +16,6 @@ import eatda.repository.store.StoreRepository;
 import java.util.List;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
@@ -41,21 +40,18 @@ public class CheerPersistence {
 
     @Transactional(readOnly = true)
     public List<Cheer> getCheers(CheerSearchParameters parameters) {
-        Page<Cheer> cheerPage = cheerRepository.findAllByConditions(
+        return cheerRepository.findAllByConditions(
                 parameters.getCategory(),
                 parameters.getCheerTagNames(),
                 parameters.getDistricts(),
                 PageRequest.of(parameters.getPage(), parameters.getSize(), Sort.by(Direction.DESC, SORTED_PROPERTIES))
         );
-
-        return cheerPage.getContent();
     }
 
     @Transactional(readOnly = true)
     public List<Cheer> getCheersByStoreId(Long storeId, int page, int size) {
-        Store store = storeRepository.getById(storeId);
-        Page<Cheer> cheersPage = cheerRepository.findAllByStoreOrderByCreatedAtDesc(store, PageRequest.of(page, size));
-        return cheersPage.getContent();
+        Store store = storeRepository.getByIdOrThrow(storeId);
+        return cheerRepository.findAllByStoreOrderByCreatedAtDesc(store, PageRequest.of(page, size));
     }
 
     @Transactional

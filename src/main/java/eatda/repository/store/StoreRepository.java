@@ -8,7 +8,6 @@ import eatda.exception.BusinessErrorCode;
 import eatda.exception.BusinessException;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,8 +16,7 @@ import org.springframework.lang.Nullable;
 
 public interface StoreRepository extends JpaRepository<Store, Long> {
 
-    @Override
-    default Store getById(Long id) {
+    default Store getByIdOrThrow(Long id) {
         return findById(id)
                 .orElseThrow(() -> new BusinessException(BusinessErrorCode.STORE_NOT_FOUND));
     }
@@ -33,7 +31,7 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
             """)
     List<Store> findAllByCheeredMemberId(long memberId);
 
-    default Page<Store> findAllByConditions(@Nullable StoreCategory category,
+    default List<Store> findAllByConditions(@Nullable StoreCategory category,
                                             List<CheerTagName> cheerTagNames,
                                             List<District> districts,
                                             Pageable pageable) {
@@ -41,7 +39,7 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
         return findAll(spec, pageable);
     }
 
-    Page<Store> findAll(Specification<Store> spec, Pageable pageable);
+    List<Store> findAll(Specification<Store> spec, Pageable pageable);
 
     private Specification<Store> createSpecification(@Nullable StoreCategory category,
                                                      List<CheerTagName> cheerTagNames,

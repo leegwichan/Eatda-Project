@@ -22,11 +22,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+// TODO CheerRegisterFacade 로직과 결합 후, @Transactional 범위 조정 필요
 public class CheerService {
 
     private final CheerPersistence cheerPersistence;
     private final FileClient fileClient;
 
+    @Transactional(readOnly = true)
     public CheerResponse getCheer(Long cheerId) {
         Cheer cheer = cheerPersistence.getCheerById(cheerId);
 
@@ -56,17 +58,20 @@ public class CheerService {
         return CheersInStoreResponse.from(cheers);
     }
 
+    @Transactional
     public CheerCreationResult createCheer(CheerRegisterRequest request, StoreSearchResult result, long memberId) {
         Cheer cheer = cheerPersistence.createCheer(request, result, memberId);
         return new CheerCreationResult(cheer, cheer.getStore());
     }
 
+    @Transactional
     public void saveCheerImages(Long cheerId,
                                 List<CheerRegisterRequest.UploadedImageDetail> sortedImages,
                                 List<String> permanentKeys) {
         cheerPersistence.saveCheerImages(cheerId, sortedImages, permanentKeys);
     }
 
+    @Transactional
     public void deleteCheer(Long cheerId) {
         cheerPersistence.deleteCheerById(cheerId);
     }

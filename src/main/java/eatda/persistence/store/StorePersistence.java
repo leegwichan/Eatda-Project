@@ -1,10 +1,7 @@
 package eatda.persistence.store;
 
-import eatda.controller.store.ImagesResponse;
 import eatda.controller.store.StoreInMemberResponse;
 import eatda.controller.store.StoreSearchParameters;
-import eatda.controller.store.StoresInMemberResponse;
-import eatda.controller.store.TagsResponse;
 import eatda.domain.cheer.CheerImage;
 import eatda.domain.cheer.CheerTag;
 import eatda.domain.store.Store;
@@ -32,7 +29,7 @@ public class StorePersistence {
     private final CheerImageRepository cheerImageRepository;
 
     public Store getStore(long storeId) {
-        return storeRepository.getById(storeId);
+        return storeRepository.getByIdOrThrow(storeId);
     }
 
     @Transactional(readOnly = true)
@@ -50,12 +47,12 @@ public class StorePersistence {
                 parameters.getCheerTagNames(),
                 parameters.getDistricts(),
                 PageRequest.of(parameters.getPage(), parameters.getSize(), Sort.by(Direction.DESC, "createdAt"))
-        ).getContent();
+        );
     }
 
     @Transactional(readOnly = true)
     public List<CheerTag> getStoreTags(long storeId) {
-        Store store = storeRepository.getById(storeId);
+        Store store = storeRepository.getByIdOrThrow(storeId);
         return cheerTagRepository.findAllByCheerStore(store);
     }
 
@@ -66,7 +63,7 @@ public class StorePersistence {
 
     @Transactional(readOnly = true)
     public List<CheerImage> getStoreImages(long storeId) {
-        Store store = storeRepository.getById(storeId);
+        Store store = storeRepository.getByIdOrThrow(storeId);
         return cheerImageRepository.findAllByCheer_StoreOrderByOrderIndexAsc(store);
     }
 
