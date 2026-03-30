@@ -6,6 +6,8 @@ import eatda.domain.member.Member;
 import eatda.domain.store.District;
 import eatda.domain.store.Store;
 import eatda.domain.store.StoreCategory;
+import eatda.exception.BusinessErrorCode;
+import eatda.exception.BusinessException;
 import jakarta.persistence.criteria.JoinType;
 import java.util.List;
 import org.springframework.data.domain.Page;
@@ -16,6 +18,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.lang.Nullable;
 
 public interface CheerRepository extends JpaRepository<Cheer, Long> {
+
+    default Cheer getByIdOrThrow(long cheerId) {
+        return findById(cheerId)
+                .orElseThrow(() -> new BusinessException(BusinessErrorCode.CHEER_NOT_FOUND));
+    }
 
     Page<Cheer> findAllByStoreOrderByCreatedAtDesc(Store store, PageRequest pageRequest);
 

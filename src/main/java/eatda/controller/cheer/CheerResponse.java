@@ -2,9 +2,7 @@ package eatda.controller.cheer;
 
 import eatda.domain.cheer.Cheer;
 import eatda.domain.cheer.CheerTagName;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public record CheerResponse(
         long storeId,
@@ -14,14 +12,11 @@ public record CheerResponse(
         List<CheerTagName> tags
 ) {
 
-    public CheerResponse(Cheer cheer, String cdnBaseUrl) {
+    public CheerResponse(Cheer cheer, List<CheerImageResponse> images) {
         this(
                 cheer.getStore().getId(),
                 cheer.getId(),
-                cheer.getImages().stream()
-                        .map(img -> new CheerImageResponse(img, cdnBaseUrl))
-                        .sorted(Comparator.comparingLong(CheerImageResponse::orderIndex))
-                        .collect(Collectors.toList()),
+                images,
                 cheer.getDescription(),
                 cheer.getCheerTagNames()
         );

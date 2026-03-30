@@ -41,7 +41,7 @@ public class StoryController {
     @GetMapping("api/stories")
     public ResponseEntity<StoriesResponse> getStories(@RequestParam(defaultValue = "5") @Min(1) @Max(50) int size) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(storyService.getPagedStoryPreviews(size));
+                .body(storyService.getStoryPreviews(size));
     }
 
     @GetMapping("/api/stories/{storyId}")
@@ -56,7 +56,7 @@ public class StoryController {
             @RequestParam(defaultValue = "5") @Min(1) @Max(50) int size,
             LoginMember member
     ) {
-        StoriesInMemberResponse response = storyService.getPagedStoryByMemberId(member.id(), page, size);
+        StoriesInMemberResponse response = storyService.getStoriesByMemberId(member.id(), page, size);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(response);
     }
@@ -67,6 +67,6 @@ public class StoryController {
             @RequestParam(defaultValue = "5") @Min(1) @Max(50) int size
     ) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(storyService.getPagedStoryDetails(kakaoId, size));
+                .body(storyService.getStoriesDetails(kakaoId, size));
     }
 }

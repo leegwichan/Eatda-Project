@@ -1,5 +1,6 @@
 package eatda.service.store;
 
+import eatda.client.file.FileClient;
 import eatda.controller.store.ImagesResponse;
 import eatda.controller.store.StoreInMemberResponse;
 import eatda.controller.store.StorePreviewResponse;
@@ -11,18 +12,10 @@ import eatda.controller.store.TagsResponse;
 import eatda.domain.cheer.CheerImage;
 import eatda.domain.cheer.CheerTag;
 import eatda.domain.store.Store;
-import eatda.repository.cheer.CheerImageRepository;
-import eatda.repository.cheer.CheerRepository;
-import eatda.repository.cheer.CheerTagRepository;
-import eatda.repository.store.StoreRepository;
+import eatda.persistence.store.StorePersistence;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,64 +23,49 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class StoreService {
 
-    private final StoreRepository storeRepository;
-    private final CheerRepository cheerRepository;
-    private final CheerTagRepository cheerTagRepository;
-    private final CheerImageRepository cheerImageRepository;
-
-    @Value("${cdn.base-url}")
-    private String cdnBaseUrl;
+    private final StorePersistence storePersistence;
+    private final FileClient fileClient;
 
     public StoreResponse getStore(long storeId) {
-        Store store = storeRepository.getById(storeId);
+        Store store = storePersistence.getStore(storeId);
         return new StoreResponse(store);
     }
 
     // TODO : N+1 문제 해결
     @Transactional(readOnly = true)
     public StoresResponse getStores(StoreSearchParameters parameters) {
-        Page<Store> stores = storeRepository.findAllByConditions(
-                parameters.getCategory(),
-                parameters.getCheerTagNames(),
-                parameters.getDistricts(),
-                PageRequest.of(parameters.getPage(), parameters.getSize(), Sort.by(Direction.DESC, "createdAt"))
-        );
+        List<Store> stores = storePersistence.getStores(parameters);
 
         List<StorePreviewResponse> responses = stores.stream()
-                .map(store -> new StorePreviewResponse(store, getStoreImageUrl(store).orElse(null)))
+                .map(store -> new StorePreviewResponse(store, getStoreThumbnailImage(store.getId())))
                 .toList();
         return new StoresResponse(responses);
     }
 
-    @Transactional(readOnly = true)
+    @Nullable
+    private String getStoreThumbnailImage(long storeId) {
+        return storePersistence.getStoreThumbnailImage(storeId)
+                .map(CheerImage::getImageKey)
+                .map(fileClient::getImageUrl)
+                .orElse(null);
+    }
+
     public TagsResponse getStoreTags(long storeId) {
-        Store store = storeRepository.getById(storeId);
-        List<CheerTag> cheerTags = cheerTagRepository.findAllByCheerStore(store);
+        List<CheerTag> cheerTags = storePersistence.getStoreTags(storeId);
         return TagsResponse.from(cheerTags);
     }
 
-    @Transactional(readOnly = true)
     public ImagesResponse getStoreImages(long storeId) {
-        Store store = storeRepository.getById(storeId);
-        List<String> urls = cheerImageRepository.findAllByCheer_StoreOrderByOrderIndexAsc(store)
-                .stream()
-                .map(img -> "https://" + cdnBaseUrl + "/" + img.getImageKey())
-                .toList();
-        return new ImagesResponse(urls);
-    }
-
-    private Optional<String> getStoreImageUrl(Store store) {
-        return cheerImageRepository.findFirstByCheer_Store_IdOrderByCreatedAtDesc(store.getId())
+        List<CheerImage> cheerImages = storePersistence.getStoreImages(storeId);
+        List<String> imageUrls = cheerImages.stream()
                 .map(CheerImage::getImageKey)
-                .map(imageKey -> "https://" + cdnBaseUrl + "/" + imageKey);
+                .map(fileClient::getImageUrl)
+                .toList();
+        return new ImagesResponse(imageUrls);
     }
 
-    @Transactional(readOnly = true)
     public StoresInMemberResponse getStoresByCheeredMember(long memberId) {
-        List<Store> stores = storeRepository.findAllByCheeredMemberId(memberId);
-        List<StoreInMemberResponse> responses = stores.stream()
-                .map(store -> new StoreInMemberResponse(store, cheerRepository.countByStore(store)))
-                .toList(); // TODO : N+1 문제 해결 (특정 회원의 가게는 3명 제한이라 중요도 낮음)
+        List<StoreInMemberResponse> responses = storePersistence.getStoresByCheeredMember(memberId);
         return new StoresInMemberResponse(responses);
     }
 }

@@ -38,7 +38,7 @@ class FileClientTest {
         this.s3Client = mock(S3Client.class);
         this.bucket = "test-bucket";
         this.s3Presigner = mock(S3Presigner.class);
-        this.fileClient = new FileClient(s3Client, bucket, s3Presigner);
+        this.fileClient = new FileClient(s3Client, bucket, s3Presigner, "cdn.example.com");
     }
 
     @Nested
