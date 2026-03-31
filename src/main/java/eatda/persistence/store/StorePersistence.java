@@ -1,7 +1,7 @@
 package eatda.persistence.store;
 
-import eatda.controller.store.StoreInMemberResponse;
 import eatda.controller.store.StoreSearchParameters;
+import eatda.domain.cheer.Cheer;
 import eatda.domain.cheer.CheerImage;
 import eatda.domain.cheer.CheerTag;
 import eatda.domain.store.Store;
@@ -40,14 +40,31 @@ public class StorePersistence {
                 .orElse(null);
     }
 
+    // TODO : N+1 문제 해결
     @Transactional(readOnly = true)
-    public List<Store> getStores(StoreSearchParameters parameters) {
-        return storeRepository.findAllByConditions(
+    public List<StorePreviewResult> getStorePreviews(StoreSearchParameters parameters) {
+        List<Store> stores = storeRepository.findAllByConditions(
                 parameters.getCategory(),
                 parameters.getCheerTagNames(),
                 parameters.getDistricts(),
                 PageRequest.of(parameters.getPage(), parameters.getSize(), Sort.by(Direction.DESC, "createdAt"))
         );
+        return stores.stream()
+                .map(store -> new StorePreviewResult(
+                        store, getStoreThumbnailImageUrl(store.getId()), getCheerDescriptions(store)))
+                .toList();
+    }
+
+    private String getStoreThumbnailImageUrl(long storeId) {
+        return cheerImageRepository.findFirstByCheer_Store_IdOrderByCreatedAtDesc(storeId)
+                .map(CheerImage::getImageKey)
+                .orElse(null);
+    }
+
+    private List<String> getCheerDescriptions(Store store) {
+        return cheerRepository.findAllByStoreOrderByCreatedAtDesc(store, PageRequest.of(0, 3)).stream()
+                .map(Cheer::getDescription)
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -68,12 +85,11 @@ public class StorePersistence {
     }
 
     @Transactional(readOnly = true)
-    public List<StoreInMemberResponse> getStoresByCheeredMember(long memberId) {
+    public List<StorePopularityResult> getStoresByCheeredMember(long memberId) {
         List<Store> stores = storeRepository.findAllByCheeredMemberId(memberId);
         // TODO : N+1 문제 해결 (특정 회원의 가게는 3명 제한이라 중요도 낮음)
-        // TODO : cheerCount는 별도의 쿼리로 조회하여 매핑하는 방식 고려 (도메인으로 반환 방법, ...)
         return stores.stream()
-                .map(store -> new StoreInMemberResponse(store, cheerRepository.countByStore(store)))
+                .map(store -> new StorePopularityResult(store, cheerRepository.countByStore(store)))
                 .toList();
     }
 }

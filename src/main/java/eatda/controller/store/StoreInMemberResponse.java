@@ -9,7 +9,7 @@ public record StoreInMemberResponse(
         String neighborhood,
         long cheerCount
 ) {
-    public StoreInMemberResponse(Store store, int cheerCount) {
+    public StoreInMemberResponse(Store store, long cheerCount) {
         this(
                 store.getId(),
                 store.getName(),
