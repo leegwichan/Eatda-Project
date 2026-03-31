@@ -29,7 +29,16 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
                 WHERE c.member.id = :memberId
                 ORDER BY c.createdAt DESC
             """)
-    List<Store> findAllByCheeredMemberId(long memberId);
+    List<Store> findAllByCheeredMemberIdOrderByCheerAt(long memberId);
+
+    @Query("""
+            SELECT s.id AS storeId, COUNT(c.id) AS cheerCount FROM Store s
+                LEFT JOIN Cheer c ON s.id = c.store.id
+                WHERE s IN :stores
+                GROUP BY s.id
+            """)
+    List<StorePopularity> findStorePopularity(List<Store> stores);
+
 
     default List<Store> findAllByConditions(@Nullable StoreCategory category,
                                             List<CheerTagName> cheerTagNames,

@@ -8,9 +8,12 @@ import eatda.domain.store.Store;
 import eatda.repository.cheer.CheerImageRepository;
 import eatda.repository.cheer.CheerRepository;
 import eatda.repository.cheer.CheerTagRepository;
+import eatda.repository.store.StorePopularity;
 import eatda.repository.store.StoreRepository;
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -40,7 +43,7 @@ public class StorePersistence {
                 .orElse(null);
     }
 
-    // TODO : N+1 문제 해결
+    // TODO : N+1 문제 성능 측정 필요
     @Transactional(readOnly = true)
     public List<StorePreviewResult> getStorePreviews(StoreSearchParameters parameters) {
         List<Store> stores = storeRepository.findAllByConditions(
@@ -56,7 +59,7 @@ public class StorePersistence {
     }
 
     private String getStoreThumbnailImageUrl(long storeId) {
-        return cheerImageRepository.findFirstByCheer_Store_IdOrderByCreatedAtDesc(storeId)
+        return cheerImageRepository.findFirstByCheerStoreIdOrderByCreatedAtDesc(storeId)
                 .map(CheerImage::getImageKey)
                 .orElse(null);
     }
@@ -74,22 +77,22 @@ public class StorePersistence {
     }
 
     @Transactional(readOnly = true)
-    public Optional<CheerImage> getStoreThumbnailImage(long storeId) {
-        return cheerImageRepository.findFirstByCheer_Store_IdOrderByCreatedAtDesc(storeId);
-    }
-
-    @Transactional(readOnly = true)
     public List<CheerImage> getStoreImages(long storeId) {
         Store store = storeRepository.getByIdOrThrow(storeId);
-        return cheerImageRepository.findAllByCheer_StoreOrderByOrderIndexAsc(store);
+        return cheerImageRepository.findAllByCheerStoreOrderByOrderIndexAsc(store);
     }
 
     @Transactional(readOnly = true)
     public List<StorePopularityResult> getStoresByCheeredMember(long memberId) {
-        List<Store> stores = storeRepository.findAllByCheeredMemberId(memberId);
-        // TODO : N+1 문제 해결 (특정 회원의 가게는 3명 제한이라 중요도 낮음)
+        List<Store> stores = storeRepository.findAllByCheeredMemberIdOrderByCheerAt(memberId);
+        if (stores.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Map<Long, Long> cheerCounts = storeRepository.findStorePopularity(stores).stream()
+                .collect(Collectors.toMap(StorePopularity::getStoreId, StorePopularity::getCheerCount));
         return stores.stream()
-                .map(store -> new StorePopularityResult(store, cheerRepository.countByStore(store)))
+                .map(store -> new StorePopularityResult(store, cheerCounts.getOrDefault(store.getId(), 0L)))
                 .toList();
     }
 }

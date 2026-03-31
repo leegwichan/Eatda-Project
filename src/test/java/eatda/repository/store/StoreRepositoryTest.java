@@ -31,7 +31,7 @@ class StoreRepositoryTest extends BaseRepositoryTest {
             cheerGenerator.generate(member, store1, startAt);
             cheerGenerator.generate(member, store3, startAt.plusHours(1));
 
-            List<Store> actual = storeRepository.findAllByCheeredMemberId(member.getId());
+            List<Store> actual = storeRepository.findAllByCheeredMemberIdOrderByCheerAt(member.getId());
 
             assertAll(
                     () -> assertThat(actual).hasSize(2),
@@ -45,7 +45,7 @@ class StoreRepositoryTest extends BaseRepositoryTest {
             Member member = memberGenerator.generateRegisteredMember("커찬", "abc@kakao.com", "123", "01012341235");
             storeGenerator.generate("1235", "서울시 강남구 역삼동 123-45");
 
-            List<Store> actual = storeRepository.findAllByCheeredMemberId(member.getId());
+            List<Store> actual = storeRepository.findAllByCheeredMemberIdOrderByCheerAt(member.getId());
 
             assertThat(actual).isEmpty();
         }
