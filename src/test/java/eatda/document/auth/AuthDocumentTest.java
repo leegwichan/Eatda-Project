@@ -115,8 +115,7 @@ public class AuthDocumentTest extends BaseDocumentTest {
             LoginRequest request = new LoginRequest("code", "http://localhost:3000");
             OauthMemberInformation oauthInformation = new OauthMemberInformation(322L, "abc@kakao.com", "닉네임");
             MemberResponse response = new MemberResponse(1L, "abc@kakao.com", true, "닉네임", null, null);
-            doReturn(oauthInformation).when(authService).getOAuthInformation(anyString(), anyString());
-            doReturn(response).when(authService).login(oauthInformation);
+            doReturn(response).when(authService).login(anyString(), anyString());
 
             var document = document("auth/login", 201)
                     .request(requestDocument)
@@ -135,7 +134,7 @@ public class AuthDocumentTest extends BaseDocumentTest {
         @ParameterizedTest
         void 로그인_실패(BusinessErrorCode errorCode) {
             LoginRequest request = new LoginRequest("code", "http://localhost:3000");
-            doThrow(new BusinessException(errorCode)).when(authService).getOAuthInformation(anyString(), anyString());
+            doThrow(new BusinessException(errorCode)).when(authService).login(anyString(), anyString());
 
             var document = document("auth/login", errorCode)
                     .request(requestDocument)

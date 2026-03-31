@@ -1,6 +1,5 @@
 package eatda.controller.auth;
 
-import eatda.client.oauth.OauthMemberInformation;
 import eatda.controller.member.MemberResponse;
 import eatda.controller.web.jwt.JwtManager;
 import eatda.service.auth.AuthService;
@@ -34,8 +33,7 @@ public class AuthController {
 
     @PostMapping("/api/auth/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
-        OauthMemberInformation oauthInformation = authService.getOAuthInformation(request.code(), request.origin());
-        MemberResponse member = authService.login(oauthInformation);
+        MemberResponse member = authService.login(request.code(), request.origin());
 
         TokenResponse token = new TokenResponse(
                 jwtManager.issueAccessToken(member.id()),
