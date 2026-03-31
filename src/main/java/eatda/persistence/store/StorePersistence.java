@@ -10,7 +10,10 @@ import eatda.repository.cheer.CheerRepository;
 import eatda.repository.cheer.CheerTagRepository;
 import eatda.repository.store.StorePopularity;
 import eatda.repository.store.StoreRepository;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -82,18 +85,14 @@ public class StorePersistence {
     @Transactional(readOnly = true)
     public List<StorePopularityResult> getStoresByCheeredMember(long memberId) {
         List<Store> stores = storeRepository.findAllByCheeredMemberIdOrderByCheerAt(memberId);
-        List<StorePopularity> storePopularity = storeRepository.findStorePopularity(stores);
+        if (stores.isEmpty()) {
+            return Collections.emptyList();
+        }
 
+        Map<Long, Long> cheerCounts = storeRepository.findStorePopularity(stores).stream()
+                .collect(Collectors.toMap(StorePopularity::getStoreId, StorePopularity::getCheerCount));
         return stores.stream()
-                .map(store -> new StorePopularityResult(store, findCheerCount(store, storePopularity)))
+                .map(store -> new StorePopularityResult(store, cheerCounts.getOrDefault(store.getId(), 0L)))
                 .toList();
-    }
-
-    private long findCheerCount(Store store, List<StorePopularity> storePopularity) {
-        return storePopularity.stream()
-                .filter(popularity -> popularity.isMatchStoreId(store))
-                .findFirst()
-                .map(StorePopularity::getCheerCount)
-                .orElse(0L);
     }
 }
