@@ -2,11 +2,8 @@ package eatda.controller.cheer;
 
 import eatda.controller.store.SearchDistrict;
 import eatda.controller.web.auth.LoginMember;
-import eatda.domain.ImageDomain;
 import eatda.domain.cheer.CheerTagName;
 import eatda.domain.store.StoreCategory;
-import eatda.domain.store.StoreSearchResult;
-import eatda.facade.CheerRegisterFacade;
 import eatda.service.cheer.CheerService;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

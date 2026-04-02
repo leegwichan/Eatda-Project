@@ -1,8 +1,8 @@
 package eatda.persistence.cheer;
 
 import eatda.client.file.FileMovingResult;
-import eatda.controller.cheer.CheerRegisterRequest;
 import eatda.controller.cheer.CheerRegisterImage;
+import eatda.controller.cheer.CheerRegisterRequest;
 import eatda.controller.cheer.CheerSearchParameters;
 import eatda.domain.cheer.Cheer;
 import eatda.domain.cheer.CheerImage;
@@ -14,6 +14,7 @@ import eatda.exception.BusinessException;
 import eatda.repository.cheer.CheerRepository;
 import eatda.repository.member.MemberRepository;
 import eatda.repository.store.StoreRepository;
+import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -85,6 +86,7 @@ public class CheerPersistence {
 
         Cheer cheer = cheerRepository.getByIdOrThrow(cheerId);
         return images.stream()
+                .sorted(Comparator.comparingLong(CheerRegisterImage::orderIndex))
                 .map(image -> saveCheerImage(image, cheer, movingResult))
                 .toList();
     }
@@ -98,6 +100,7 @@ public class CheerPersistence {
                 image.fileSize()
         );
         cheer.addImage(createdImage);
+        return createdImage;
     }
 
     @Transactional

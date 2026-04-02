@@ -5,7 +5,6 @@ import eatda.domain.cheer.CheerTagName;
 import eatda.domain.store.SearchDistrict;
 import eatda.domain.store.StoreCategory;
 import eatda.domain.store.StoreSearchResult;
-import eatda.service.store.StoreSearchService;
 import eatda.service.store.StoreService;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

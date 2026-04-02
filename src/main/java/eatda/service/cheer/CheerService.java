@@ -6,8 +6,8 @@ import eatda.client.map.MapClient;
 import eatda.client.map.MapClientStoreSearchResult;
 import eatda.controller.cheer.CheerImageResponse;
 import eatda.controller.cheer.CheerPreviewResponse;
-import eatda.controller.cheer.CheerRegisterRequest;
 import eatda.controller.cheer.CheerRegisterImage;
+import eatda.controller.cheer.CheerRegisterRequest;
 import eatda.controller.cheer.CheerResponse;
 import eatda.controller.cheer.CheerSearchParameters;
 import eatda.controller.cheer.CheersInStoreResponse;
@@ -18,7 +18,6 @@ import eatda.domain.cheer.CheerImage;
 import eatda.domain.store.StoreSearchFilter;
 import eatda.domain.store.StoreSearchResult;
 import eatda.exception.BusinessException;
-import eatda.facade.CheerCreationResult;
 import eatda.persistence.cheer.CheerPersistence;
 import java.util.Comparator;
 import java.util.List;
@@ -72,12 +71,6 @@ public class CheerService {
     }
 
     @Transactional
-    public CheerCreationResult createCheer(CheerRegisterRequest request, StoreSearchResult result, long memberId) {
-        Cheer cheer = cheerPersistence.createCheer(request, result, memberId);
-        return new CheerCreationResult(cheer, cheer.getStore());
-    }
-
-    @Transactional
     public CheerResponse registerCheer(CheerRegisterRequest request, long memberId) {
         List<MapClientStoreSearchResult> clientResult = mapClient.searchStores(request.storeName());
         StoreSearchResult filteredResult = storeSearchFilter.filterStoreByKakaoId(clientResult, request.storeKakaoId());
@@ -96,11 +89,12 @@ public class CheerService {
     }
 
     private List<CheerImage> saveCheerImages(Cheer cheer, List<CheerRegisterImage> registerImages) {
+        List<String> beforeImageKeys = registerImages.stream()
+                .map(CheerRegisterImage::imageKey)
+                .toList();
+
         FileMovingResult movingResult = null;
         try {
-            List<String> beforeImageKeys = registerImages.stream()
-                    .map(CheerRegisterImage::imageKey)
-                    .toList();
             movingResult = fileClient.moveFiles(IMAGE_DOMAIN.getName(), cheer.getId(), beforeImageKeys);
             return cheerPersistence.saveCheerImages(cheer.getId(), registerImages, movingResult);
         } catch (BusinessException exception) {
@@ -111,17 +105,5 @@ public class CheerService {
             }
             throw exception;
         }
-    }
-
-    @Transactional
-    public void saveCheerImages(Long cheerId,
-                                List<CheerRegisterImage> sortedImages,
-                                List<String> permanentKeys) {
-        cheerPersistence.saveCheerImages(cheerId, sortedImages, permanentKeys);
-    }
-
-    @Transactional
-    public void deleteCheer(Long cheerId) {
-        cheerPersistence.deleteCheerById(cheerId);
     }
 }

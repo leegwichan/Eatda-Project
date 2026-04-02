@@ -15,8 +15,8 @@ import static org.springframework.restdocs.request.RequestDocumentation.paramete
 import eatda.controller.cheer.CheerImageResponse;
 import eatda.controller.cheer.CheerInStoreResponse;
 import eatda.controller.cheer.CheerPreviewResponse;
-import eatda.controller.cheer.CheerRegisterRequest;
 import eatda.controller.cheer.CheerRegisterImage;
+import eatda.controller.cheer.CheerRegisterRequest;
 import eatda.controller.cheer.CheerResponse;
 import eatda.controller.cheer.CheersInStoreResponse;
 import eatda.controller.cheer.CheersResponse;
@@ -100,7 +100,7 @@ public class CheerDocumentTest extends BaseDocumentTest {
                     List.of(CheerTagName.GOOD_FOR_DATING, CheerTagName.CLEAN_RESTROOM)
             );
 
-            doReturn(response).when(cheerRegisterFacade).registerCheer(eq(request), any(), anyLong(), any());
+            doReturn(response).when(cheerService).registerCheer(eq(request), anyLong());
 
             var document = document("cheer/register", 201)
                     .request(requestDocument)
@@ -137,8 +137,7 @@ public class CheerDocumentTest extends BaseDocumentTest {
                     List.of(CheerTagName.GOOD_FOR_DATING, CheerTagName.CLEAN_RESTROOM)
             );
 
-            doThrow(new BusinessException(errorCode))
-                    .when(cheerRegisterFacade).registerCheer(eq(request), any(), anyLong(), any());
+            doThrow(new BusinessException(errorCode)).when(cheerService).registerCheer(eq(request), anyLong());
 
             var document = document("cheer/register", errorCode)
                     .request(requestDocument)

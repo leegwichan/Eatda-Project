@@ -7,7 +7,6 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import eatda.controller.web.jwt.JwtManager;
 import eatda.exception.BusinessErrorCode;
 import eatda.exception.EtcErrorCode;
-import eatda.facade.CheerRegisterFacade;
 import eatda.service.auth.AuthService;
 import eatda.service.cheer.CheerService;
 import eatda.service.image.PresignedUrlService;
@@ -58,9 +57,6 @@ public abstract class BaseDocumentTest {
 
     @MockitoBean
     protected PresignedUrlService presignedUrlService;
-
-    @MockitoBean
-    protected CheerRegisterFacade cheerRegisterFacade;
 
     @MockitoBean
     protected JwtManager jwtManager;

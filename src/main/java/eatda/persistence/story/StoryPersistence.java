@@ -1,15 +1,16 @@
 package eatda.persistence.story;
 
-import eatda.controller.story.StoryRegisterRequest;
+import eatda.client.file.FileMovingResult;
 import eatda.controller.story.StoryRegisterImage;
+import eatda.controller.story.StoryRegisterRequest;
 import eatda.domain.member.Member;
 import eatda.domain.store.StoreSearchResult;
 import eatda.domain.story.Story;
 import eatda.domain.story.StoryImage;
 import eatda.repository.member.MemberRepository;
 import eatda.repository.story.StoryRepository;
+import java.util.Comparator;
 import java.util.List;
-import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
@@ -49,22 +50,42 @@ public class StoryPersistence {
     public Story createStory(StoryRegisterRequest request, StoreSearchResult result, long memberId) {
         Member member = memberRepository.getById(memberId);
 
-        Story story = Story.builder().member(member).storeKakaoId(result.kakaoId()).storeName(result.name())
-                .storeRoadAddress(result.roadAddress()).storeLotNumberAddress(result.lotNumberAddress())
-                .storeCategory(result.category()).description(request.description()).build();
+        Story story = Story.builder()
+                .member(member)
+                .storeKakaoId(result.kakaoId())
+                .storeName(result.name())
+                .storeRoadAddress(result.roadAddress())
+                .storeLotNumberAddress(result.lotNumberAddress())
+                .storeCategory(result.category())
+                .description(request.description())
+                .build();
         return storyRepository.save(story);
     }
 
     @Transactional
-    public void saveStoryImages(Story story, List<StoryRegisterImage> sortedImages,
-                                List<String> permanentKeys) {
-        IntStream.range(0, sortedImages.size()).forEach(i -> {
-            var detail = sortedImages.get(i);
-            StoryImage storyImage = new StoryImage(story, permanentKeys.get(i), detail.orderIndex(),
-                    detail.contentType(), detail.fileSize());
-            story.addImage(storyImage);
-        });
+    public List<StoryImage> saveStoryImages(long storyId,
+                                            List<StoryRegisterImage> registerImages,
+                                            FileMovingResult movingResult) {
+        Story story = storyRepository.getByIdOrThrow(storyId);
+        return registerImages.stream()
+                .sorted(Comparator.comparingLong(StoryRegisterImage::orderIndex))
+                .map(image -> saveStoryImage(image, story, movingResult))
+                .toList();
+    }
 
-        storyRepository.save(story);
+    private StoryImage saveStoryImage(StoryRegisterImage image, Story story, FileMovingResult movingResult) {
+        StoryImage createdImage = new StoryImage(
+                story,
+                movingResult.findNewPath(image.imageKey()),
+                image.orderIndex(),
+                image.contentType(),
+                image.fileSize()
+        );
+        story.addImage(createdImage);
+        return createdImage;
+    }
+
+    public void deleteStoryById(Long id) {
+        storyRepository.deleteById(id);
     }
 }

@@ -3,6 +3,7 @@ package eatda.client.file;
 import eatda.exception.BusinessErrorCode;
 import eatda.exception.BusinessException;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +13,9 @@ import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.Delete;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
+import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
@@ -37,6 +40,10 @@ public class FileClient {
         this.cdnBaseUrl = cdnBaseUrl;
     }
 
+    public String getImageUrl(String imagePath) {
+        return "https://" + cdnBaseUrl + "/" + imagePath;
+    }
+
     public String generateUploadPresignedUrl(String fileKey, Duration signatureDuration) {
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
@@ -49,7 +56,7 @@ public class FileClient {
 
         try {
             return s3Presigner.presignPutObject(presignRequest).url().toString();
-        } catch (Exception exception) {
+        } catch (SdkException exception) {
             throw new BusinessException(BusinessErrorCode.PRESIGNED_URL_GENERATION_FAILED);
         }
     }
@@ -66,10 +73,7 @@ public class FileClient {
             }
         } catch (SdkException sdkException) {
             log.error("S3 파일 이동 중 실패. 롤백 수행. successKeys={}", moveResult, sdkException);
-            List<String> newFilePaths = moveResult.values()
-                    .stream()
-                    .toList();
-            deleteFiles(newFilePaths);
+            deleteFiles(moveResult.values());
             throw new BusinessException(BusinessErrorCode.FAIL_TEMP_IMAGE_PROCESS);
         }
 
@@ -77,37 +81,33 @@ public class FileClient {
         return new FileMovingResult(moveResult);
     }
 
-    public void deleteFiles(List<String> paths) {
-        if (paths.isEmpty()) {
-            return;
-        }
-        paths.forEach(this::deleteObject);
-    }
-
-    public String getImageUrl(String imagePath) {
-        return "https://" + cdnBaseUrl + "/" + imagePath;
-    }
-
     private String extractFileName(String fullName) {
         int index = fullName.lastIndexOf(PATH_DELIMITER);
         return index == -1 ? fullName : fullName.substring(index + 1);
     }
 
-    private void copyObject(String sourceKey, String destinationKey) {
+    private void copyObject(String beforePath, String afterPath) {
         CopyObjectRequest copyReq = CopyObjectRequest.builder()
                 .sourceBucket(bucket)
-                .sourceKey(sourceKey)
+                .sourceKey(beforePath)
                 .destinationBucket(bucket)
-                .destinationKey(destinationKey)
+                .destinationKey(afterPath)
                 .build();
         s3Client.copyObject(copyReq);
     }
 
-    private void deleteObject(String key) {
-        DeleteObjectRequest deleteReq = DeleteObjectRequest.builder()
+    public void deleteFiles(Collection<String> paths) {
+        if (paths.isEmpty()) {
+            return;
+        }
+
+        List<ObjectIdentifier> keysToDelete = paths.stream()
+                .map(path -> ObjectIdentifier.builder().key(path).build())
+                .toList();
+        DeleteObjectsRequest multiDeleteRequest = DeleteObjectsRequest.builder()
                 .bucket(bucket)
-                .key(key)
+                .delete(Delete.builder().objects(keysToDelete).build())
                 .build();
-        s3Client.deleteObject(deleteReq);
+        s3Client.deleteObjects(multiDeleteRequest);
     }
 }

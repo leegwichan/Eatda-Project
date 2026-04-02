@@ -1,9 +1,6 @@
 package eatda.controller.story;
 
 import eatda.controller.web.auth.LoginMember;
-import eatda.domain.ImageDomain;
-import eatda.domain.store.StoreSearchResult;
-import eatda.service.store.StoreSearchService;
 import eatda.service.story.StoryService;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -24,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class StoryController {
 
     private final StoryService storyService;
-    private final StoreSearchService storeSearchService;
 
     @PostMapping("/api/stories")
     public ResponseEntity<StoryRegisterResponse> registerStory(
