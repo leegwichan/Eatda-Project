@@ -3,8 +3,9 @@ package eatda.client.file;
 import eatda.exception.BusinessErrorCode;
 import eatda.exception.BusinessException;
 import java.time.Duration;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -53,41 +54,43 @@ public class FileClient {
         }
     }
 
-    public List<String> moveTempFilesToPermanent(String domainName, long domainId, List<String> tempImageKeys) {
-        List<String> successKeys = new ArrayList<>();
+    public FileMovingResult moveFiles(String domainName, long domainId, List<String> beforePaths) {
+        Map<String, String> moveResult = new HashMap<>();
 
         try {
-            for (String tempKey : tempImageKeys) {
-                String fileName = extractFileName(tempKey);
-                String newPermanentKey = domainName + PATH_DELIMITER + domainId + PATH_DELIMITER + fileName;
-
-                copyObject(tempKey, newPermanentKey);
-                deleteObject(tempKey);
-
-                successKeys.add(newPermanentKey);
+            for (String beforePath : beforePaths) {
+                String fileName = extractFileName(beforePath);
+                String afterPath = domainName + PATH_DELIMITER + domainId + PATH_DELIMITER + fileName;
+                copyObject(beforePath, afterPath);
+                moveResult.put(beforePath, afterPath);
             }
-            return successKeys;
         } catch (SdkException sdkException) {
-            log.error("S3 파일 이동 중 실패. 롤백 수행. successKeys={}", successKeys, sdkException);
-            deleteFiles(successKeys);
+            log.error("S3 파일 이동 중 실패. 롤백 수행. successKeys={}", moveResult, sdkException);
+            List<String> newFilePaths = moveResult.values()
+                    .stream()
+                    .toList();
+            deleteFiles(newFilePaths);
             throw new BusinessException(BusinessErrorCode.FAIL_TEMP_IMAGE_PROCESS);
         }
+
+        deleteFiles(beforePaths);
+        return new FileMovingResult(moveResult);
     }
 
-    public void deleteFiles(List<String> keys) {
-        if (keys.isEmpty()) {
+    public void deleteFiles(List<String> paths) {
+        if (paths.isEmpty()) {
             return;
         }
-        keys.forEach(this::deleteObject);
+        paths.forEach(this::deleteObject);
     }
 
-    public String getImageUrl(String imageKey) {
-        return "https://" + cdnBaseUrl + "/" + imageKey;
+    public String getImageUrl(String imagePath) {
+        return "https://" + cdnBaseUrl + "/" + imagePath;
     }
 
-    private String extractFileName(String fullKey) {
-        int index = fullKey.lastIndexOf(PATH_DELIMITER);
-        return index == -1 ? fullKey : fullKey.substring(index + 1);
+    private String extractFileName(String fullName) {
+        int index = fullName.lastIndexOf(PATH_DELIMITER);
+        return index == -1 ? fullName : fullName.substring(index + 1);
     }
 
     private void copyObject(String sourceKey, String destinationKey) {

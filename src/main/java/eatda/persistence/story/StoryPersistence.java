@@ -1,6 +1,7 @@
 package eatda.persistence.story;
 
 import eatda.controller.story.StoryRegisterRequest;
+import eatda.controller.story.StoryRegisterImage;
 import eatda.domain.member.Member;
 import eatda.domain.store.StoreSearchResult;
 import eatda.domain.story.Story;
@@ -55,7 +56,7 @@ public class StoryPersistence {
     }
 
     @Transactional
-    public void saveStoryImages(Story story, List<StoryRegisterRequest.UploadedImageDetail> sortedImages,
+    public void saveStoryImages(Story story, List<StoryRegisterImage> sortedImages,
                                 List<String> permanentKeys) {
         IntStream.range(0, sortedImages.size()).forEach(i -> {
             var detail = sortedImages.get(i);

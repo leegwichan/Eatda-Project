@@ -19,9 +19,4 @@ public class StoreSearchService {
         List<MapClientStoreSearchResult> searchResults = mapClient.searchStores(name);
         return storeSearchFilter.filterStoreByKakaoId(searchResults, kakaoId);
     }
-
-    public List<StoreSearchResult> searchStores(String name) {
-        List<MapClientStoreSearchResult> searchResults = mapClient.searchStores(name);
-        return storeSearchFilter.filterSearchedStores(searchResults);
-    }
 }

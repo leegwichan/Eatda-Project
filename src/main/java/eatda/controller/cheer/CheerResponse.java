@@ -2,6 +2,7 @@ package eatda.controller.cheer;
 
 import eatda.domain.cheer.Cheer;
 import eatda.domain.cheer.CheerTagName;
+import java.util.Collections;
 import java.util.List;
 
 public record CheerResponse(
@@ -20,5 +21,9 @@ public record CheerResponse(
                 cheer.getDescription(),
                 cheer.getCheerTagNames()
         );
+    }
+
+    public CheerResponse(Cheer cheer) {
+        this(cheer, Collections.emptyList());
     }
 }

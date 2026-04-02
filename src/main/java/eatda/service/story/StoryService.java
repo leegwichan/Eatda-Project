@@ -1,6 +1,8 @@
 package eatda.service.story;
 
 import eatda.client.file.FileClient;
+import eatda.client.map.MapClient;
+import eatda.client.map.MapClientStoreSearchResult;
 import eatda.controller.story.StoriesDetailResponse;
 import eatda.controller.story.StoriesDetailResponse.StoryDetailResponse;
 import eatda.controller.story.StoriesInMemberResponse;
@@ -9,9 +11,11 @@ import eatda.controller.story.StoriesResponse.StoryPreview;
 import eatda.controller.story.StoryImageResponse;
 import eatda.controller.story.StoryInMemberResponse;
 import eatda.controller.story.StoryRegisterRequest;
+import eatda.controller.story.StoryRegisterImage;
 import eatda.controller.story.StoryRegisterResponse;
 import eatda.controller.story.StoryResponse;
 import eatda.domain.ImageDomain;
+import eatda.domain.store.StoreSearchFilter;
 import eatda.domain.store.StoreSearchResult;
 import eatda.domain.story.Story;
 import eatda.domain.story.StoryImage;
@@ -30,6 +34,8 @@ public class StoryService {
     private final StoryPersistence storyPersistence;
     private final StorePersistence storePersistence;
     private final FileClient fileClient;
+    private final MapClient mapClient;
+    private final StoreSearchFilter storeSearchFilter;
 
     @Transactional(readOnly = true)
     public StoryResponse getStory(long storyId) {
@@ -78,31 +84,25 @@ public class StoryService {
 
     @Transactional // TODO 트랜잭션 범위 축소
     public StoryRegisterResponse registerStory(StoryRegisterRequest request,
-                                               StoreSearchResult result,
-                                               ImageDomain domain,
                                                long memberId) {
-        Story story = storyPersistence.createStory(request, result, memberId);
+
+        List<MapClientStoreSearchResult> searched = mapClient.searchStores(request.storeName());
+        StoreSearchResult filtered = storeSearchFilter.filterStoreByKakaoId(searched, request.storeKakaoId());
+
+        Story story = storyPersistence.createStory(request, filtered, memberId);
         // TODO 트랜잭션 범위 축소
-        List<StoryRegisterRequest.UploadedImageDetail> sortedImages = sortImages(request.images());
-        List<String> permanentKeys = moveImages(domain.getName(), story.getId(), sortedImages);
-        storyPersistence.saveStoryImages(story, sortedImages, permanentKeys);
+        List<String> newImageKeys = moveImages(ImageDomain.STORY.getName(), story.getId(), request.images());
+        storyPersistence.saveStoryImages(story, request.images(), newImageKeys);
 
         return new StoryRegisterResponse(story.getId());
     }
 
-    private List<StoryRegisterRequest.UploadedImageDetail> sortImages(
-            List<StoryRegisterRequest.UploadedImageDetail> images) {
-        return images.stream()
-                .sorted(Comparator.comparingLong(StoryRegisterRequest.UploadedImageDetail::orderIndex))
-                .toList();
-    }
-
     private List<String> moveImages(String domainName,
                                     long storyId,
-                                    List<StoryRegisterRequest.UploadedImageDetail> sortedImages) {
-        List<String> tempKeys = sortedImages.stream()
-                .map(StoryRegisterRequest.UploadedImageDetail::imageKey)
+                                    List<StoryRegisterImage> images) {
+        List<String> tempKeys = images.stream()
+                .map(StoryRegisterImage::imageKey)
                 .toList();
-        return fileClient.moveTempFilesToPermanent(domainName, storyId, tempKeys);
+        return fileClient.moveFiles(domainName, storyId, tempKeys);
     }
 }

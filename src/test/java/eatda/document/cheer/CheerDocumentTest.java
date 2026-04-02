@@ -16,6 +16,7 @@ import eatda.controller.cheer.CheerImageResponse;
 import eatda.controller.cheer.CheerInStoreResponse;
 import eatda.controller.cheer.CheerPreviewResponse;
 import eatda.controller.cheer.CheerRegisterRequest;
+import eatda.controller.cheer.CheerRegisterImage;
 import eatda.controller.cheer.CheerResponse;
 import eatda.controller.cheer.CheersInStoreResponse;
 import eatda.controller.cheer.CheersResponse;
@@ -82,8 +83,8 @@ public class CheerDocumentTest extends BaseDocumentTest {
                     "2085990843",
                     "정말 맛있어요! 강추합니다!",
                     List.of(
-                            new CheerRegisterRequest.UploadedImageDetail("temp/1.png", 0, "image/png", 12345),
-                            new CheerRegisterRequest.UploadedImageDetail("temp/2.png", 1, "image/png", 67890)
+                            new CheerRegisterImage("temp/1.png", 0, "image/png", 12345),
+                            new CheerRegisterImage("temp/2.png", 1, "image/png", 67890)
                     ),
                     List.of(CheerTagName.GOOD_FOR_DATING, CheerTagName.CLEAN_RESTROOM)
             );
@@ -131,7 +132,7 @@ public class CheerDocumentTest extends BaseDocumentTest {
                     "123",
                     "너무 맛있어요!",
                     List.of(
-                            new CheerRegisterRequest.UploadedImageDetail("temp/1.png", 0, "image/png", 12345)
+                            new CheerRegisterImage("temp/1.png", 0, "image/png", 12345)
                     ),
                     List.of(CheerTagName.GOOD_FOR_DATING, CheerTagName.CLEAN_RESTROOM)
             );

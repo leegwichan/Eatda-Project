@@ -1,7 +1,8 @@
 package eatda.persistence.cheer;
 
+import eatda.client.file.FileMovingResult;
 import eatda.controller.cheer.CheerRegisterRequest;
-import eatda.controller.cheer.CheerRegisterRequest.UploadedImageDetail;
+import eatda.controller.cheer.CheerRegisterImage;
 import eatda.controller.cheer.CheerSearchParameters;
 import eatda.domain.cheer.Cheer;
 import eatda.domain.cheer.CheerImage;
@@ -14,7 +15,6 @@ import eatda.repository.cheer.CheerRepository;
 import eatda.repository.member.MemberRepository;
 import eatda.repository.store.StoreRepository;
 import java.util.List;
-import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -79,24 +79,25 @@ public class CheerPersistence {
     }
 
     @Transactional
-    public void saveCheerImages(Long cheerId,
-                                List<UploadedImageDetail> sortedImages,
-                                List<String> permanentKeys) {
+    public List<CheerImage> saveCheerImages(Long cheerId,
+                                            List<CheerRegisterImage> images,
+                                            FileMovingResult movingResult) {
 
         Cheer cheer = cheerRepository.getByIdOrThrow(cheerId);
+        return images.stream()
+                .map(image -> saveCheerImage(image, cheer, movingResult))
+                .toList();
+    }
 
-        IntStream.range(0, sortedImages.size())
-                .forEach(i -> {
-                    var detail = sortedImages.get(i);
-                    CheerImage cheerImage = new CheerImage(
-                            cheer,
-                            permanentKeys.get(i),
-                            detail.orderIndex(),
-                            detail.contentType(),
-                            detail.fileSize()
-                    );
-                    cheer.addImage(cheerImage);
-                });
+    private CheerImage saveCheerImage(CheerRegisterImage image, Cheer cheer, FileMovingResult movingResult) {
+        CheerImage createdImage = new CheerImage(
+                cheer,
+                movingResult.findNewPath(image.imageKey()),
+                image.orderIndex(),
+                image.contentType(),
+                image.fileSize()
+        );
+        cheer.addImage(createdImage);
     }
 
     @Transactional

@@ -10,6 +10,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
 import eatda.controller.cheer.CheerRegisterRequest;
+import eatda.controller.cheer.CheerRegisterImage;
 import eatda.controller.cheer.CheerResponse;
 import eatda.domain.ImageDomain;
 import eatda.domain.cheer.CheerTagName;
@@ -53,7 +54,7 @@ class CheerRegisterFacadeTest extends BaseFacadeTest {
                     127.269310
             );
 
-            given(fileClient.moveTempFilesToPermanent(
+            given(fileClient.moveFiles(
                     eq(ImageDomain.CHEER.getName()),
                     anyLong(),
                     anyList()
@@ -74,7 +75,7 @@ class CheerRegisterFacadeTest extends BaseFacadeTest {
             assertThat(response.images()).hasSize(2);
 
             verify(fileClient)
-                    .moveTempFilesToPermanent(
+                    .moveFiles(
                             eq(ImageDomain.CHEER.getName()),
                             anyLong(),
                             anyList()
@@ -85,8 +86,8 @@ class CheerRegisterFacadeTest extends BaseFacadeTest {
         void 이미지_이동_중_실패하면_응원을_삭제한다() {
             var member = memberGenerator.generate("member-1");
 
-            CheerRegisterRequest.UploadedImageDetail image =
-                    new CheerRegisterRequest.UploadedImageDetail(
+            CheerRegisterImage image =
+                    new CheerRegisterImage(
                             "temp/key1.jpg", 1L, "image/jpeg", 1000L
                     );
 
@@ -111,7 +112,7 @@ class CheerRegisterFacadeTest extends BaseFacadeTest {
                     127.269310
             );
 
-            given(fileClient.moveTempFilesToPermanent(
+            given(fileClient.moveFiles(
                     anyString(),
                     anyLong(),
                     anyList()
@@ -150,7 +151,7 @@ class CheerRegisterFacadeTest extends BaseFacadeTest {
                     127.269310
             );
 
-            given(fileClient.moveTempFilesToPermanent(
+            given(fileClient.moveFiles(
                     eq(ImageDomain.CHEER.getName()),
                     anyLong(),
                     anyList()
@@ -179,7 +180,7 @@ class CheerRegisterFacadeTest extends BaseFacadeTest {
 
             CheerRegisterRequest request = new CheerRegisterRequest(
                     "kakao-1", "농민백암순대", "맛있어요",
-                    List.of(new CheerRegisterRequest.UploadedImageDetail(
+                    List.of(new CheerRegisterImage(
                             "temp/key1.jpg",
                             1L,
                             tooLongContentType,
@@ -195,7 +196,7 @@ class CheerRegisterFacadeTest extends BaseFacadeTest {
             );
 
             List<String> movedKeys = List.of("cheer/1/key1.jpg");
-            given(fileClient.moveTempFilesToPermanent(anyString(), anyLong(), anyList()))
+            given(fileClient.moveFiles(anyString(), anyLong(), anyList()))
                     .willReturn(movedKeys);
 
             assertThrows(Exception.class, () ->
@@ -251,15 +252,15 @@ class CheerRegisterFacadeTest extends BaseFacadeTest {
             assertThat(cheerRepository.count()).isEqualTo(1);
 
             verify(fileClient, Mockito.never())
-                    .moveTempFilesToPermanent(anyString(), anyLong(), anyList());
+                    .moveFiles(anyString(), anyLong(), anyList());
         }
 
         @NonNull
         private CheerRegisterRequest getRegisterRequest() {
-            CheerRegisterRequest.UploadedImageDetail image1 =
-                    new CheerRegisterRequest.UploadedImageDetail("temp/key1.jpg", 1L, "image/jpeg", 1000L);
-            CheerRegisterRequest.UploadedImageDetail image2 =
-                    new CheerRegisterRequest.UploadedImageDetail("temp/key2.jpg", 2L, "image/jpeg", 2000L);
+            CheerRegisterImage image1 =
+                    new CheerRegisterImage("temp/key1.jpg", 1L, "image/jpeg", 1000L);
+            CheerRegisterImage image2 =
+                    new CheerRegisterImage("temp/key2.jpg", 2L, "image/jpeg", 2000L);
 
             return new CheerRegisterRequest(
                     "kakao-1",
@@ -272,16 +273,16 @@ class CheerRegisterFacadeTest extends BaseFacadeTest {
 
         @NonNull
         private CheerRegisterRequest getCheerRegisterRequest() {
-            CheerRegisterRequest.UploadedImageDetail image1 =
-                    new CheerRegisterRequest.UploadedImageDetail(
+            CheerRegisterImage image1 =
+                    new CheerRegisterImage(
                             "temp/key1.jpg", 1L, "image/jpeg", 1000L
                     );
-            CheerRegisterRequest.UploadedImageDetail image2 =
-                    new CheerRegisterRequest.UploadedImageDetail(
+            CheerRegisterImage image2 =
+                    new CheerRegisterImage(
                             "temp/key2.jpg", 2L, "image/jpeg", 1000L
                     );
-            CheerRegisterRequest.UploadedImageDetail image3 =
-                    new CheerRegisterRequest.UploadedImageDetail(
+            CheerRegisterImage image3 =
+                    new CheerRegisterImage(
                             "temp/key3.jpg", 3L, "image/jpeg", 1000L
                     );
 

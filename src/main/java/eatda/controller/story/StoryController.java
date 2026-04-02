@@ -31,9 +31,7 @@ public class StoryController {
             @RequestBody StoryRegisterRequest request,
             LoginMember member
     ) {
-        StoreSearchResult searchResult = storeSearchService.searchStoreByKakaoId(
-                request.storeName(), request.storeKakaoId());
-        StoryRegisterResponse response = storyService.registerStory(request, searchResult, ImageDomain.STORY, member.id());
+        StoryRegisterResponse response = storyService.registerStory(request, member.id());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(response);
     }

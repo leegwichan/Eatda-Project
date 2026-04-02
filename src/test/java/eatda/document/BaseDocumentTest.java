@@ -12,7 +12,6 @@ import eatda.service.auth.AuthService;
 import eatda.service.cheer.CheerService;
 import eatda.service.image.PresignedUrlService;
 import eatda.service.member.MemberService;
-import eatda.service.store.StoreSearchService;
 import eatda.service.store.StoreService;
 import eatda.service.story.StoryService;
 import io.restassured.RestAssured;
@@ -50,9 +49,6 @@ public abstract class BaseDocumentTest {
 
     @MockitoBean
     protected StoreService storeService;
-
-    @MockitoBean
-    protected StoreSearchService storeSearchService;
 
     @MockitoBean
     protected StoryService storyService;

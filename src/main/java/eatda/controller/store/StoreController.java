@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class StoreController {
 
     private final StoreService storeService;
-    private final StoreSearchService storeSearchService;
 
     @GetMapping("/api/shops/{storeId}")
     public ResponseEntity<StoreResponse> getStore(@PathVariable long storeId) {
@@ -62,7 +61,7 @@ public class StoreController {
 
     @GetMapping("/api/shop/search")
     public ResponseEntity<StoreSearchResponses> searchStore(@RequestParam String query, LoginMember member) {
-        List<StoreSearchResult> storeSearchResults = storeSearchService.searchStores(query);
+        List<StoreSearchResult> storeSearchResults = storeService.searchStores(query);
         StoreSearchResponses response = StoreSearchResponses.from(storeSearchResults);
         return ResponseEntity.ok(response);
     }

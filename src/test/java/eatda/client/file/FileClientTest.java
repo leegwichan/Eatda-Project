@@ -86,7 +86,7 @@ class FileClientTest {
             doReturn(CopyObjectResponse.builder().build()).when(s3Client).copyObject(any(CopyObjectRequest.class));
             doReturn(DeleteObjectResponse.builder().build()).when(s3Client).deleteObject(any(DeleteObjectRequest.class));
 
-            List<String> result = fileClient.moveTempFilesToPermanent(domainName, domainId, tempImageKeys);
+            List<String> result = fileClient.moveFiles(domainName, domainId, tempImageKeys);
 
             assertThat(result).hasSize(2);
             assertThat(result.get(0)).isEqualTo("cheer/123/temp1.jpg");

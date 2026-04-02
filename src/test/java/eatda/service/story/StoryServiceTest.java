@@ -12,8 +12,9 @@ import eatda.controller.story.StoriesDetailResponse;
 import eatda.controller.story.StoriesResponse;
 import eatda.controller.story.StoryImageResponse;
 import eatda.controller.story.StoryRegisterRequest;
+import eatda.controller.story.StoryRegisterImage;
+import eatda.controller.story.StoryRegisterResponse;
 import eatda.controller.story.StoryResponse;
-import eatda.domain.ImageDomain;
 import eatda.domain.member.Member;
 import eatda.domain.store.District;
 import eatda.domain.store.Store;
@@ -55,8 +56,7 @@ class StoryServiceTest extends BaseServiceTest {
             StoryRegisterRequest request =
                     new StoryRegisterRequest("곱창", "123", "미쳤다 여기", List.of());
 
-            var response = storyService.registerStory(
-                    request, storeSearchResult, ImageDomain.STORY, member.getId());
+            var response = storyService.registerStory(request, member.getId());
 
             Story savedStory = storyRepository.findById(response.storyId()).orElseThrow();
             assertAll(
@@ -73,19 +73,18 @@ class StoryServiceTest extends BaseServiceTest {
 
         @Test
         void 스토리_등록_시_이미지도_함께_저장된다() {
-            StoryRegisterRequest.UploadedImageDetail image2 =
-                    new StoryRegisterRequest.UploadedImageDetail("temp-key-2", 2L, "image/jpeg", 2000L);
-            StoryRegisterRequest.UploadedImageDetail image1 =
-                    new StoryRegisterRequest.UploadedImageDetail("temp-key-1", 1L, "image/jpeg", 1000L);
+            StoryRegisterImage image2 =
+                    new StoryRegisterImage("temp-key-2", 2L, "image/jpeg", 2000L);
+            StoryRegisterImage image1 =
+                    new StoryRegisterImage("temp-key-1", 1L, "image/jpeg", 1000L);
             StoryRegisterRequest request =
                     new StoryRegisterRequest("곱창", "123", "미쳤다 여기", List.of(image2, image1));
 
             List<String> permanentKeys = List.of("permanent/path/1", "permanent/path/2");
-            given(fileClient.moveTempFilesToPermanent(any(String.class), anyLong(), anyList()))
+            given(fileClient.moveFiles(any(String.class), anyLong(), anyList()))
                     .willReturn(permanentKeys);
 
-            var response = storyService.registerStory(
-                    request, storeSearchResult, ImageDomain.STORY, member.getId());
+            StoryRegisterResponse response = storyService.registerStory(request, member.getId());
 
             Story savedStory = storyRepository.findById(response.storyId()).orElseThrow();
 
