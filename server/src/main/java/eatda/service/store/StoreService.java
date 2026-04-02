@@ -13,9 +13,10 @@ import eatda.domain.cheer.CheerImage;
 import eatda.domain.cheer.CheerTag;
 import eatda.domain.store.Store;
 import eatda.persistence.store.StorePersistence;
+import eatda.persistence.store.StorePopularityResult;
+import eatda.persistence.store.StorePreviewResult;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,23 +32,14 @@ public class StoreService {
         return new StoreResponse(store);
     }
 
-    // TODO : N+1 문제 해결
-    @Transactional(readOnly = true)
     public StoresResponse getStores(StoreSearchParameters parameters) {
-        List<Store> stores = storePersistence.getStores(parameters);
+        List<StorePreviewResult> results = storePersistence.getStorePreviews(parameters);
 
-        List<StorePreviewResponse> responses = stores.stream()
-                .map(store -> new StorePreviewResponse(store, getStoreThumbnailImage(store.getId())))
+        List<StorePreviewResponse> responses = results.stream()
+                .map(result -> new StorePreviewResponse(
+                        result.store(), result.thumbnailImageUrl(), result.cheerDescriptions()))
                 .toList();
         return new StoresResponse(responses);
-    }
-
-    @Nullable
-    private String getStoreThumbnailImage(long storeId) {
-        return storePersistence.getStoreThumbnailImage(storeId)
-                .map(CheerImage::getImageKey)
-                .map(fileClient::getImageUrl)
-                .orElse(null);
     }
 
     public TagsResponse getStoreTags(long storeId) {
@@ -65,7 +57,11 @@ public class StoreService {
     }
 
     public StoresInMemberResponse getStoresByCheeredMember(long memberId) {
-        List<StoreInMemberResponse> responses = storePersistence.getStoresByCheeredMember(memberId);
+        List<StorePopularityResult> results = storePersistence.getStoresByCheeredMember(memberId);
+
+        List<StoreInMemberResponse> responses = results.stream()
+                .map(result -> new StoreInMemberResponse(result.store(), result.cheerCount()))
+                .toList();
         return new StoresInMemberResponse(responses);
     }
 }

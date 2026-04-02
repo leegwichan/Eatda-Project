@@ -9,7 +9,6 @@ import eatda.exception.BusinessErrorCode;
 import eatda.exception.EtcErrorCode;
 import eatda.facade.CheerRegisterFacade;
 import eatda.service.auth.AuthService;
-import eatda.service.auth.OauthService;
 import eatda.service.cheer.CheerService;
 import eatda.service.image.PresignedUrlService;
 import eatda.service.member.MemberService;
@@ -42,9 +41,6 @@ public abstract class BaseDocumentTest {
             );
     private static final String MOCKED_ACCESS_TOKEN = "access-token";
     private static final String MOCKED_REFRESH_TOKEN = "refresh-token";
-
-    @MockitoBean
-    protected OauthService oauthService;
 
     @MockitoBean
     protected AuthService authService;

@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CheerImageRepository extends JpaRepository<CheerImage, Long> {
 
-    List<CheerImage> findAllByCheer_StoreOrderByOrderIndexAsc(Store store);
+    List<CheerImage> findAllByCheerStoreOrderByOrderIndexAsc(Store store);
 
-    Optional<CheerImage> findFirstByCheer_Store_IdOrderByCreatedAtDesc(Long storeId);
+    Optional<CheerImage> findFirstByCheerStoreIdOrderByCreatedAtDesc(Long storeId);
 }

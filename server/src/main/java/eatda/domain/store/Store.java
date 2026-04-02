@@ -88,6 +88,10 @@ public class Store extends AuditingEntity {
         this.coordinates = new Coordinates(latitude, longitude);
     }
 
+    public String getCategoryName() {
+        return category.getCategoryName();
+    }
+
     public String getAddressDistrict() {
         return district.getName();
     }
@@ -98,11 +102,5 @@ public class Store extends AuditingEntity {
             return "";
         }
         return addressParts[2];
-    }
-
-    public List<String> getCheerDescriptions() {
-        return cheers.stream()
-                .map(Cheer::getDescription)
-                .toList();
     }
 }

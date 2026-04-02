@@ -1,10 +1,13 @@
 package eatda.persistence.member;
 
+import eatda.client.oauth.OauthMemberInformation;
+import eatda.controller.member.MemberResponse;
 import eatda.controller.member.MemberUpdateRequest;
 import eatda.domain.member.Member;
 import eatda.exception.BusinessErrorCode;
 import eatda.exception.BusinessException;
 import eatda.repository.member.MemberRepository;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +33,14 @@ public class MemberPersistence {
     public void validatePhoneNumber(String phoneNumber, long memberId) {
         Member member = memberRepository.getById(memberId);
         validatePhoneNumberNotDuplicate(member, phoneNumber);
+    }
+
+    @Transactional(readOnly = true)
+    public LoginResult login(Member member) {
+        Optional<Member> optionalMember = memberRepository.findBySocialId(member.getSocialId());
+        boolean isFirstLogin = optionalMember.isEmpty();
+        Member savedMember = optionalMember.orElseGet(() -> memberRepository.save(member));
+        return new LoginResult(savedMember, isFirstLogin);
     }
 
     @Transactional

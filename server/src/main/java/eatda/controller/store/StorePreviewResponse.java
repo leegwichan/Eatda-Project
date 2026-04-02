@@ -14,15 +14,15 @@ public record StorePreviewResponse(
         List<String> cheerDescriptions
 ) {
 
-    public StorePreviewResponse(Store store, @Nullable String imageUrl) {
+    public StorePreviewResponse(Store store, @Nullable String imageUrl, List<String> cheerDescriptions) {
         this(
                 store.getId(),
                 imageUrl,
                 store.getName(),
                 store.getAddressDistrict(),
                 store.getAddressNeighborhood(),
-                store.getCategory().getCategoryName(),
-                store.getCheerDescriptions()
+                store.getCategoryName(),
+                cheerDescriptions
         );
     }
 }

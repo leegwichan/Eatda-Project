@@ -17,7 +17,6 @@ import eatda.repository.member.MemberRepository;
 import eatda.repository.store.StoreRepository;
 import eatda.repository.story.StoryRepository;
 import eatda.service.auth.AuthService;
-import eatda.service.auth.OauthService;
 import eatda.service.store.StoreSearchService;
 import eatda.service.story.StoryService;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,8 +28,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 public abstract class BaseServiceTest {
 
-    private static final String MOCKED_IMAGE_URL = "https://example.com/image.jpg";
-
     @MockitoBean
     protected OauthClient oauthClient;
 
@@ -39,9 +36,6 @@ public abstract class BaseServiceTest {
 
     @MockitoBean
     protected FileClient fileClient;
-
-    @Autowired
-    protected OauthService oauthService;
 
     @Autowired
     protected AuthService authService;
