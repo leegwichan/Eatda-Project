@@ -71,13 +71,12 @@ public class FileClient {
                 copyObject(beforePath, afterPath);
                 moveResult.put(beforePath, afterPath);
             }
+            deleteFiles(beforePaths);
         } catch (SdkException sdkException) {
-            log.error("S3 파일 이동 중 실패. 롤백 수행. successKeys={}", moveResult, sdkException);
+            log.error("S3 파일 이동 중 실패. 롤백 수행. moveResult={}", moveResult, sdkException);
             deleteFiles(moveResult.values());
             throw new BusinessException(BusinessErrorCode.FAIL_TEMP_IMAGE_PROCESS);
         }
-
-        deleteFiles(beforePaths);
         return new FileMovingResult(moveResult);
     }
 

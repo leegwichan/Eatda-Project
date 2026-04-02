@@ -20,7 +20,6 @@ import eatda.domain.store.StoreSearchFilter;
 import eatda.domain.store.StoreSearchResult;
 import eatda.domain.story.Story;
 import eatda.domain.story.StoryImage;
-import eatda.exception.BusinessException;
 import eatda.persistence.store.StorePersistence;
 import eatda.persistence.story.StoryPersistence;
 import java.util.Comparator;
@@ -28,7 +27,6 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -43,7 +41,6 @@ public class StoryService {
     private final MapClient mapClient;
     private final StoreSearchFilter storeSearchFilter;
 
-    @Transactional(readOnly = true)
     public StoryResponse getStory(long storyId) {
         Story story = storyPersistence.getStory(storyId);
         Long storeId = storePersistence.getStoreIdByKakaoId(story.getStoreKakaoId());
@@ -51,7 +48,6 @@ public class StoryService {
         return new StoryResponse(story, storeId, toStoryImageResponses(story.getImages()));
     }
 
-    @Transactional(readOnly = true)
     public StoriesResponse getStoryPreviews(int size) {
         List<Story> stories = storyPersistence.getStories(size);
 
@@ -61,7 +57,6 @@ public class StoryService {
         return new StoriesResponse(responses);
     }
 
-    @Transactional(readOnly = true)
     public StoriesDetailResponse getStoriesDetails(String kakaoId, int size) {
         List<Story> stories = storyPersistence.getStoriesByKakaoId(kakaoId, size);
 
@@ -71,7 +66,6 @@ public class StoryService {
         return new StoriesDetailResponse(responses);
     }
 
-    @Transactional(readOnly = true)
     public StoriesInMemberResponse getStoriesByMemberId(long memberId, int page, int size) {
         List<Story> stories = storyPersistence.getStoriesByMemberId(memberId, page, size);
 
@@ -110,8 +104,8 @@ public class StoryService {
         try {
             movingResult = fileClient.moveFiles(IMAGE_DOMAIN.getName(), story.getId(), beforeImageKeys);
             return storyPersistence.saveStoryImages(story.getId(), registerImages, movingResult);
-        } catch (BusinessException exception) {
-            log.error("스토리 등록 프로세스 실패. 롤백 수행. cheerId={}", story.getId(), exception);
+        } catch (RuntimeException exception) {
+            log.error("스토리 등록 프로세스 실패. 롤백 수행. storyId={}", story.getId(), exception);
             storyPersistence.deleteStoryById(story.getId());
             if (movingResult != null) {
                 fileClient.deleteFiles(movingResult.getResults());

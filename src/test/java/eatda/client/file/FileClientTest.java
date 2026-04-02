@@ -20,8 +20,8 @@ import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
 import software.amazon.awssdk.services.s3.model.CopyObjectResponse;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsResponse;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
@@ -85,8 +85,8 @@ class FileClientTest {
             List<String> tempImageKeys = List.of("temp/temp1.jpg", "temp/temp2.jpg");
 
             doReturn(CopyObjectResponse.builder().build()).when(s3Client).copyObject(any(CopyObjectRequest.class));
-            doReturn(DeleteObjectResponse.builder().build()).when(s3Client)
-                    .deleteObject(any(DeleteObjectRequest.class));
+            doReturn(DeleteObjectsResponse.builder().build()).when(s3Client)
+                    .deleteObjects(any(DeleteObjectsRequest.class));
 
             FileMovingResult result = fileClient.moveFiles(domainName, domainId, tempImageKeys);
 

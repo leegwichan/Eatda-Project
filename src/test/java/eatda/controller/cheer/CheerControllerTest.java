@@ -138,35 +138,36 @@ class CheerControllerTest extends BaseControllerTest {
             );
         }
 
-        @Nested
-        class GetCheersByStoreId {
+    }
 
-            @Test
-            void 가게_아이디로_응원을_조회한다() throws InterruptedException {
-                Member member1 = memberGenerator.generateRegisteredMember("123", "a@gmail.com", "1234", "01012341234");
-                Member member2 = memberGenerator.generateRegisteredMember("124", "b@gmail.com", "1235", "01012341235");
-                Store store = storeGenerator.generate("123", "서울시 강남구 역삼동 123-45", District.GANGNAM);
-                Cheer cheer1 = cheerGenerator.generateCommon(member1, store);
-                Thread.sleep(5);
-                Cheer cheer2 = cheerGenerator.generateCommon(member2, store);
-                int page = 0;
-                int size = 2;
+    @Nested
+    class GetCheersByStoreId {
 
-                CheersInStoreResponse response = given()
-                        .when()
-                        .queryParam("page", page)
-                        .queryParam("size", size)
-                        .get("/api/shops/{storeId}/cheers", store.getId())
-                        .then()
-                        .statusCode(200)
-                        .extract().as(CheersInStoreResponse.class);
+        @Test
+        void 가게_아이디로_응원을_조회한다() throws InterruptedException {
+            Member member1 = memberGenerator.generateRegisteredMember("123", "a@gmail.com", "1234", "01012341234");
+            Member member2 = memberGenerator.generateRegisteredMember("124", "b@gmail.com", "1235", "01012341235");
+            Store store = storeGenerator.generate("123", "서울시 강남구 역삼동 123-45", District.GANGNAM);
+            Cheer cheer1 = cheerGenerator.generateCommon(member1, store);
+            Thread.sleep(5);
+            Cheer cheer2 = cheerGenerator.generateCommon(member2, store);
+            int page = 0;
+            int size = 2;
 
-                assertAll(
-                        () -> assertThat(response.cheers()).hasSize(2),
-                        () -> assertThat(response.cheers().get(0).id()).isEqualTo(cheer2.getId()),
-                        () -> assertThat(response.cheers().get(1).id()).isEqualTo(cheer1.getId())
-                );
-            }
+            CheersInStoreResponse response = given()
+                    .when()
+                    .queryParam("page", page)
+                    .queryParam("size", size)
+                    .get("/api/shops/{storeId}/cheers", store.getId())
+                    .then()
+                    .statusCode(200)
+                    .extract().as(CheersInStoreResponse.class);
+
+            assertAll(
+                    () -> assertThat(response.cheers()).hasSize(2),
+                    () -> assertThat(response.cheers().get(0).id()).isEqualTo(cheer2.getId()),
+                    () -> assertThat(response.cheers().get(1).id()).isEqualTo(cheer1.getId())
+            );
         }
     }
 }
