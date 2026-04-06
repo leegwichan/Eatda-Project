@@ -8,7 +8,7 @@ public record CheerRegisterRequest(
         String storeKakaoId,
         String storeName,
         String description,
-        List<UploadedImageDetail> images,
+        List<CheerRegisterImage> images,
         List<CheerTagName> tags
 ) {
     @Override
@@ -17,13 +17,5 @@ public record CheerRegisterRequest(
             return Collections.emptyList();
         }
         return tags;
-    }
-
-    public record UploadedImageDetail(
-            String imageKey,
-            long orderIndex,
-            String contentType,
-            long fileSize
-    ) {
     }
 }

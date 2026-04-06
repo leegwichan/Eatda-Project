@@ -6,13 +6,6 @@ public record StoryRegisterRequest(
         String storeName,
         String storeKakaoId,
         String description,
-        List<UploadedImageDetail> images
+        List<StoryRegisterImage> images
 ) {
-    public record UploadedImageDetail(
-            String imageKey,
-            long orderIndex,
-            String contentType,
-            long fileSize
-    ) {
-    }
 }

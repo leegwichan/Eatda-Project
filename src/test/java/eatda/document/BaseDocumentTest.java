@@ -7,12 +7,10 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import eatda.controller.web.jwt.JwtManager;
 import eatda.exception.BusinessErrorCode;
 import eatda.exception.EtcErrorCode;
-import eatda.facade.CheerRegisterFacade;
 import eatda.service.auth.AuthService;
 import eatda.service.cheer.CheerService;
 import eatda.service.image.PresignedUrlService;
 import eatda.service.member.MemberService;
-import eatda.service.store.StoreSearchService;
 import eatda.service.store.StoreService;
 import eatda.service.story.StoryService;
 import io.restassured.RestAssured;
@@ -52,9 +50,6 @@ public abstract class BaseDocumentTest {
     protected StoreService storeService;
 
     @MockitoBean
-    protected StoreSearchService storeSearchService;
-
-    @MockitoBean
     protected StoryService storyService;
 
     @MockitoBean
@@ -62,9 +57,6 @@ public abstract class BaseDocumentTest {
 
     @MockitoBean
     protected PresignedUrlService presignedUrlService;
-
-    @MockitoBean
-    protected CheerRegisterFacade cheerRegisterFacade;
 
     @MockitoBean
     protected JwtManager jwtManager;
