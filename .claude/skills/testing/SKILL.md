@@ -278,7 +278,7 @@ import static org.mockito.Mockito.doReturn;
 
 - **Read the source class first** before writing any test. Understand every public method, its parameters, return type, and possible exceptions.
 - **One `@Nested` class per public method** being tested.
-- **Cover both happy path and error cases** — at minimum, test success + each `BusinessException` the method can throw.
+- **Each layer tests only its own logic** — test the happy case and edge cases (if/branch) of the method itself. Assume sub-methods (called methods from lower layers) pass their happy case. Sub-method edge cases are tested in the sub-method's own test class. However, if the method uses **private helpers**, their branches count as the method's own edge cases and must be tested here.
 - **Never mock repositories or services within integration tests** — use generators to set up real data.
 - **External clients (OauthClient, MapClient, FileClient) are already mocked** in base classes via `@MockitoBean`.
 - **Do not add `@Transactional` to test classes or methods** — `DatabaseCleaner` handles isolation.

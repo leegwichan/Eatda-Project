@@ -52,12 +52,6 @@ class CheerPersistenceTest extends BasePersistenceTest {
             );
         }
 
-        @Test
-        void 존재하지_않는_응원이면_예외를_던진다() {
-            assertThatThrownBy(() -> cheerPersistence.getCheerById(999L))
-                    .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining(BusinessErrorCode.CHEER_NOT_FOUND.getMessage());
-        }
     }
 
     @Nested
@@ -110,13 +104,6 @@ class CheerPersistenceTest extends BasePersistenceTest {
                     () -> assertThat(actual.get(0).cheer().getId()).isEqualTo(cheer.getId()),
                     () -> assertThat(actual.get(0).tags().getNames()).containsExactly(CheerTagName.ENERGETIC)
             );
-        }
-
-        @Test
-        void 존재하지_않는_가게이면_예외를_던진다() {
-            assertThatThrownBy(() -> cheerPersistence.getCheersByStoreId(999L, 0, 10))
-                    .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining(BusinessErrorCode.STORE_NOT_FOUND.getMessage());
         }
 
         @Test
@@ -207,16 +194,6 @@ class CheerPersistenceTest extends BasePersistenceTest {
             );
         }
 
-        @Test
-        void 존재하지_않는_응원이면_예외를_던진다() {
-            List<CheerRegisterImage> images = List.of(
-                    new CheerRegisterImage("old/image.png", 1L, "image/png", 1000L));
-            FileMovingResult movingResult = new FileMovingResult(Map.of("old/image.png", "new/image.png"));
-
-            assertThatThrownBy(() -> cheerPersistence.saveCheerImages(999L, images, movingResult))
-                    .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining(BusinessErrorCode.CHEER_NOT_FOUND.getMessage());
-        }
     }
 
     @Nested

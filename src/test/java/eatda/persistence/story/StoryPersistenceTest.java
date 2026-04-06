@@ -1,7 +1,6 @@
 package eatda.persistence.story;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import eatda.client.file.FileMovingResult;
@@ -14,8 +13,6 @@ import eatda.domain.store.StoreCategory;
 import eatda.domain.store.StoreSearchResult;
 import eatda.domain.story.Story;
 import eatda.domain.story.StoryImage;
-import eatda.exception.BusinessErrorCode;
-import eatda.exception.BusinessException;
 import eatda.persistence.BasePersistenceTest;
 import eatda.repository.story.StoryImageRepository;
 import java.time.LocalDateTime;
@@ -53,12 +50,6 @@ class StoryPersistenceTest extends BasePersistenceTest {
             );
         }
 
-        @Test
-        void 존재하지_않는_스토리이면_예외를_던진다() {
-            assertThatThrownBy(() -> storyPersistence.getStoryDetail(999L))
-                    .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining(BusinessErrorCode.STORY_NOT_FOUND.getMessage());
-        }
     }
 
     @Nested
@@ -166,18 +157,6 @@ class StoryPersistenceTest extends BasePersistenceTest {
             );
         }
 
-        @Test
-        void 존재하지_않는_회원이면_예외를_던진다() {
-            StoryRegisterRequest request = new StoryRegisterRequest("맛집", "1235", "정말 맛있어요!", List.of());
-            StoreSearchResult storeResult = new StoreSearchResult(
-                    "1235", StoreCategory.KOREAN, "010-1234-5678", "맛집",
-                    "https://place.kakao.com/1", "서울시 강남구 역삼동 123-45", "",
-                    District.GANGNAM, 37.5665, 126.978);
-
-            assertThatThrownBy(() -> storyPersistence.createStory(request, storeResult, 999L))
-                    .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining(BusinessErrorCode.INVALID_MEMBER_ID.getMessage());
-        }
     }
 
     @Nested
@@ -199,16 +178,6 @@ class StoryPersistenceTest extends BasePersistenceTest {
             assertThat(savedImages).hasSize(2);
         }
 
-        @Test
-        void 존재하지_않는_스토리이면_예외를_던진다() {
-            List<StoryRegisterImage> images = List.of(
-                    new StoryRegisterImage("old/image.png", 1L, "image/png", 1000L));
-            FileMovingResult movingResult = new FileMovingResult(Map.of("old/image.png", "new/image.png"));
-
-            assertThatThrownBy(() -> storyPersistence.saveStoryImages(999L, images, movingResult))
-                    .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining(BusinessErrorCode.STORY_NOT_FOUND.getMessage());
-        }
     }
 
     @Nested

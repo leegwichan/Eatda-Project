@@ -2,7 +2,6 @@ package eatda.service.store;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import eatda.controller.store.ImagesResponse;
 import eatda.controller.store.StoreResponse;
@@ -14,8 +13,6 @@ import eatda.domain.member.Member;
 import eatda.domain.store.District;
 import eatda.domain.store.Store;
 import eatda.domain.store.StoreCategory;
-import eatda.exception.BusinessErrorCode;
-import eatda.exception.BusinessException;
 import eatda.service.BaseServiceTest;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.Nested;
@@ -47,15 +44,6 @@ class StoreServiceTest extends BaseServiceTest {
             );
         }
 
-        @Test
-        void 해당_음식점이_없을_경우_예외를_던진다() {
-            long nonExistentStoreId = 999L;
-
-            BusinessException exception = assertThrows(BusinessException.class,
-                    () -> storeService.getStore(nonExistentStoreId));
-
-            assertThat(exception.getErrorCode()).isEqualTo(BusinessErrorCode.STORE_NOT_FOUND);
-        }
     }
 
     @Nested
@@ -184,15 +172,6 @@ class StoreServiceTest extends BaseServiceTest {
             assertThat(response.imageUrls()).isEmpty();
         }
 
-        @Test
-        void 음식점이_존재하지_않으면_예외를_발생시킨다() {
-            long nonExistentStoreId = 999L;
-
-            BusinessException exception = assertThrows(BusinessException.class,
-                    () -> storeService.getStoreImages(nonExistentStoreId));
-
-            assertThat(exception.getErrorCode()).isEqualTo(BusinessErrorCode.STORE_NOT_FOUND);
-        }
     }
 
     @Nested

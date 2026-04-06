@@ -31,12 +31,6 @@ class MemberPersistenceTest extends BasePersistenceTest {
             assertThat(actual.getId()).isEqualTo(member.getId());
         }
 
-        @Test
-        void 존재하지_않는_회원이면_예외를_던진다() {
-            assertThatThrownBy(() -> memberPersistence.getMember(999L))
-                    .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining(BusinessErrorCode.INVALID_MEMBER_ID.getMessage());
-        }
     }
 
     @Nested

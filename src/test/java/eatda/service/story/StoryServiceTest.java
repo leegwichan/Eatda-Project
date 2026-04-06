@@ -86,6 +86,25 @@ class StoryServiceTest extends BaseServiceTest {
         }
 
         @Test
+        void 이미지_이동_중_실패하면_스토리를_삭제한다() {
+            StoryRegisterRequest request =
+                    new StoryRegisterRequest("농민백암순대 본점", "123", "미쳤다 여기",
+                            List.of(new StoryRegisterImage("temp-key-1", 1L, "image/jpeg", 1000L)));
+            given(mapClient.searchStores(anyString()))
+                    .willReturn(List.of(
+                            new MapClientStoreSearchResult("123", "FD6", "음식점 > 한식 > 국밥", "010-1234-1234", "농민백암순대 본점",
+                                    "https://yapp.co.kr", "서울 강남구 대치동 896-33", "서울 강남구 선릉로86길 40-4", 37.5d, 127.0d)
+                    ));
+            given(fileClient.moveFiles(any(String.class), anyLong(), anyList()))
+                    .willThrow(new BusinessException(BusinessErrorCode.FAIL_TEMP_IMAGE_PROCESS));
+
+            assertThatThrownBy(() -> storyService.registerStory(request, member.getId()))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining(BusinessErrorCode.FAIL_TEMP_IMAGE_PROCESS.getMessage());
+            assertThat(storyRepository.count()).isZero();
+        }
+
+        @Test
         void 스토리_등록_시_이미지도_함께_저장된다() {
             StoryRegisterImage image2 =
                     new StoryRegisterImage("temp-key-2", 2L, "image/jpeg", 2000L);
@@ -182,12 +201,6 @@ class StoryServiceTest extends BaseServiceTest {
             );
         }
 
-        @Test
-        void 존재하지_않는_스토리ID로_조회하면_예외가_발생한다() {
-            assertThatThrownBy(() -> storyService.getStory(999999L))
-                    .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining(BusinessErrorCode.STORY_NOT_FOUND.getMessage());
-        }
     }
 
     @Nested

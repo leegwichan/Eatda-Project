@@ -1,7 +1,6 @@
 package eatda.persistence.store;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import eatda.controller.store.StoreSearchParameters;
@@ -10,8 +9,6 @@ import eatda.domain.cheer.CheerTagName;
 import eatda.domain.member.Member;
 import eatda.domain.store.Store;
 import eatda.domain.store.StoreCategory;
-import eatda.exception.BusinessErrorCode;
-import eatda.exception.BusinessException;
 import eatda.persistence.BasePersistenceTest;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -36,12 +33,6 @@ class StorePersistenceTest extends BasePersistenceTest {
             assertThat(actual.getId()).isEqualTo(store.getId());
         }
 
-        @Test
-        void 존재하지_않는_가게이면_예외를_던진다() {
-            assertThatThrownBy(() -> storePersistence.getStore(999L))
-                    .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining(BusinessErrorCode.STORE_NOT_FOUND.getMessage());
-        }
     }
 
     @Nested
@@ -91,12 +82,6 @@ class StorePersistenceTest extends BasePersistenceTest {
             assertThat(actual).hasSize(2);
         }
 
-        @Test
-        void 존재하지_않는_가게이면_예외를_던진다() {
-            assertThatThrownBy(() -> storePersistence.getStoreTags(999L))
-                    .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining(BusinessErrorCode.STORE_NOT_FOUND.getMessage());
-        }
     }
 
     @Nested
@@ -119,12 +104,6 @@ class StorePersistenceTest extends BasePersistenceTest {
             );
         }
 
-        @Test
-        void 존재하지_않는_가게이면_예외를_던진다() {
-            assertThatThrownBy(() -> storePersistence.getStoreImages(999L))
-                    .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining(BusinessErrorCode.STORE_NOT_FOUND.getMessage());
-        }
     }
 
     @Nested
