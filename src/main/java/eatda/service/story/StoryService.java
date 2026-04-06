@@ -20,8 +20,9 @@ import eatda.domain.store.StoreSearchFilter;
 import eatda.domain.store.StoreSearchResult;
 import eatda.domain.story.Story;
 import eatda.domain.story.StoryImage;
-import eatda.persistence.store.StorePersistence;
+import eatda.persistence.story.StoryDetailResult;
 import eatda.persistence.story.StoryPersistence;
+import eatda.persistence.story.StoryPreviewResult;
 import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -36,41 +37,40 @@ public class StoryService {
     private static final ImageDomain IMAGE_DOMAIN = ImageDomain.STORY;
 
     private final StoryPersistence storyPersistence;
-    private final StorePersistence storePersistence;
     private final FileClient fileClient;
     private final MapClient mapClient;
     private final StoreSearchFilter storeSearchFilter;
 
     public StoryResponse getStory(long storyId) {
-        Story story = storyPersistence.getStory(storyId);
-        Long storeId = storePersistence.getStoreIdByKakaoId(story.getStoreKakaoId());
+        StoryDetailResult result = storyPersistence.getStoryDetail(storyId);
 
-        return new StoryResponse(story, storeId, toStoryImageResponses(story.getImages()));
+        return new StoryResponse(result.story(), result.storeId(), toStoryImageResponses(result.images()));
     }
 
     public StoriesResponse getStoryPreviews(int size) {
-        List<Story> stories = storyPersistence.getStories(size);
+        List<StoryPreviewResult> results = storyPersistence.getRecentStoryPreviews(size);
 
-        List<StoryPreview> responses = stories.stream()
-                .map(story -> new StoryPreview(story.getId(), toStoryImageResponses(story.getImages())))
+        List<StoryPreview> responses = results.stream()
+                .map(result -> new StoryPreview(result.story().getId(), toStoryImageResponses(result.images())))
                 .toList();
         return new StoriesResponse(responses);
     }
 
     public StoriesDetailResponse getStoriesDetails(String kakaoId, int size) {
-        List<Story> stories = storyPersistence.getStoriesByKakaoId(kakaoId, size);
+        List<StoryDetailResult> results = storyPersistence.getStoryDetailsByKakaoId(kakaoId, size);
 
-        List<StoryDetailResponse> responses = stories.stream()
-                .map(story -> new StoryDetailResponse(story, toStoryImageResponses(story.getImages())))
+        List<StoryDetailResponse> responses = results.stream()
+                .map(result -> new StoryDetailResponse(result.story(), result.member(),
+                        toStoryImageResponses(result.images())))
                 .toList();
         return new StoriesDetailResponse(responses);
     }
 
     public StoriesInMemberResponse getStoriesByMemberId(long memberId, int page, int size) {
-        List<Story> stories = storyPersistence.getStoriesByMemberId(memberId, page, size);
+        List<StoryPreviewResult> results = storyPersistence.getStoryPreviewsByMemberId(memberId, page, size);
 
-        List<StoryInMemberResponse> responses = stories.stream()
-                .map(story -> new StoryInMemberResponse(story, toStoryImageResponses(story.getImages())))
+        List<StoryInMemberResponse> responses = results.stream()
+                .map(result -> new StoryInMemberResponse(result.story(), toStoryImageResponses(result.images())))
                 .toList();
         return new StoriesInMemberResponse(responses);
     }
@@ -95,7 +95,7 @@ public class StoryService {
         return new StoryRegisterResponse(story.getId());
     }
 
-    private List<StoryImage> saveStoryImages(Story story, List<StoryRegisterImage> registerImages) {
+    private void saveStoryImages(Story story, List<StoryRegisterImage> registerImages) {
         List<String> beforeImageKeys = registerImages.stream()
                 .map(StoryRegisterImage::imageKey)
                 .toList();
@@ -103,7 +103,7 @@ public class StoryService {
         FileMovingResult movingResult = null;
         try {
             movingResult = fileClient.moveFiles(IMAGE_DOMAIN.getName(), story.getId(), beforeImageKeys);
-            return storyPersistence.saveStoryImages(story.getId(), registerImages, movingResult);
+            storyPersistence.saveStoryImages(story.getId(), registerImages, movingResult);
         } catch (RuntimeException exception) {
             log.error("스토리 등록 프로세스 실패. 롤백 수행. storyId={}", story.getId(), exception);
             storyPersistence.deleteStoryById(story.getId());

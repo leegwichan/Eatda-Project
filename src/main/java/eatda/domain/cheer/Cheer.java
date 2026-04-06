@@ -17,7 +17,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -83,12 +82,5 @@ public class Cheer extends AuditingEntity {
 
     public void setCheerTags(List<CheerTagName> cheerTagNames) {
         this.cheerTags.setTags(this, cheerTagNames);
-    }
-
-    public List<CheerTagName> getCheerTagNames() {
-        if (cheerTags == null) {
-            return Collections.emptyList();
-        }
-        return cheerTags.getNames();
     }
 }

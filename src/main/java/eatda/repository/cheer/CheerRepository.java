@@ -13,6 +13,7 @@ import java.util.List;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.lang.Nullable;
 
@@ -23,6 +24,7 @@ public interface CheerRepository extends JpaRepository<Cheer, Long> {
                 .orElseThrow(() -> new BusinessException(BusinessErrorCode.CHEER_NOT_FOUND));
     }
 
+    @EntityGraph(attributePaths = {"member"})
     List<Cheer> findAllByStoreOrderByCreatedAtDesc(Store store, PageRequest pageRequest);
 
     default List<Cheer> findAllByConditions(@Nullable StoreCategory category,
@@ -54,11 +56,10 @@ public interface CheerRepository extends JpaRepository<Cheer, Long> {
         return spec;
     }
 
+    @EntityGraph(attributePaths = {"store", "member"})
     List<Cheer> findAll(Specification<Cheer> specification, Pageable pageable);
 
     int countByMember(Member member);
-
-    int countByStore(Store store);
 
     boolean existsByMemberAndStoreKakaoId(Member member, String storeKakaoId);
 }

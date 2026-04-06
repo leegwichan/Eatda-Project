@@ -16,12 +16,12 @@ import org.springframework.lang.Nullable;
 
 public interface StoreRepository extends JpaRepository<Store, Long> {
 
+    Optional<Store> findByKakaoId(String kakaoId);
+
     default Store getByIdOrThrow(Long id) {
         return findById(id)
                 .orElseThrow(() -> new BusinessException(BusinessErrorCode.STORE_NOT_FOUND));
     }
-
-    Optional<Store> findByKakaoId(String kakaoId);
 
     @Query("""
             SELECT s FROM Store s

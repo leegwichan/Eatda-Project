@@ -17,10 +17,12 @@ import eatda.domain.cheer.Cheer;
 import eatda.domain.cheer.CheerImage;
 import eatda.domain.store.StoreSearchFilter;
 import eatda.domain.store.StoreSearchResult;
+import eatda.persistence.cheer.CheerDetailResult;
+import eatda.persistence.cheer.CheerInStoreResult;
 import eatda.persistence.cheer.CheerPersistence;
+import eatda.persistence.cheer.CheerPreviewResult;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,21 +40,21 @@ public class CheerService {
     private final StoreSearchFilter storeSearchFilter;
 
     public CheerResponse getCheer(Long cheerId) {
-        Cheer cheer = cheerPersistence.getCheerById(cheerId);
+        CheerDetailResult result = cheerPersistence.getCheerById(cheerId);
 
-        return new CheerResponse(cheer, toCheerImageResponses(cheer.getImages()));
+        return new CheerResponse(result, toCheerImageResponses(result.images()));
     }
 
     public CheersResponse getCheers(CheerSearchParameters parameters) {
-        List<Cheer> cheers = cheerPersistence.getCheers(parameters);
+        List<CheerPreviewResult> results = cheerPersistence.getCheers(parameters);
 
-        List<CheerPreviewResponse> cheerResponses = cheers.stream()
-                .map(cheer -> new CheerPreviewResponse(cheer, toCheerImageResponses(cheer.getImages())))
+        List<CheerPreviewResponse> cheerResponses = results.stream()
+                .map(result -> new CheerPreviewResponse(result, toCheerImageResponses(result.images())))
                 .toList();
         return new CheersResponse(cheerResponses);
     }
 
-    private List<CheerImageResponse> toCheerImageResponses(Set<CheerImage> images) {
+    private List<CheerImageResponse> toCheerImageResponses(List<CheerImage> images) {
         return images.stream()
                 .map(img -> new CheerImageResponse(img, fileClient.getImageUrl(img.getImageKey())))
                 .sorted(Comparator.comparingLong(CheerImageResponse::orderIndex))
@@ -60,25 +62,25 @@ public class CheerService {
     }
 
     public CheersInStoreResponse getCheersByStoreId(Long storeId, int page, int size) {
-        List<Cheer> cheers = cheerPersistence.getCheersByStoreId(storeId, page, size);
-        return CheersInStoreResponse.from(cheers);
+        List<CheerInStoreResult> results = cheerPersistence.getCheersByStoreId(storeId, page, size);
+        return CheersInStoreResponse.from(results);
     }
 
     public CheerResponse registerCheer(CheerRegisterRequest request, long memberId) {
         List<MapClientStoreSearchResult> clientResult = mapClient.searchStores(request.storeName());
         StoreSearchResult filteredResult = storeSearchFilter.filterStoreByKakaoId(clientResult, request.storeKakaoId());
 
-        Cheer cheer = cheerPersistence.createCheer(request, filteredResult, memberId);
+        CheerDetailResult result = cheerPersistence.createCheer(request, filteredResult, memberId);
         if (request.images() == null || request.images().isEmpty()) {
-            return new CheerResponse(cheer);
+            return new CheerResponse(result, List.of());
         }
 
-        List<CheerImage> cheerImages = saveCheerImages(cheer, request.images());
+        List<CheerImage> cheerImages = saveCheerImages(result.cheer(), request.images());
 
         List<CheerImageResponse> imageResponses = cheerImages.stream()
                 .map(image -> new CheerImageResponse(image, fileClient.getImageUrl(image.getImageKey())))
                 .toList();
-        return new CheerResponse(cheer, imageResponses);
+        return new CheerResponse(result, imageResponses);
     }
 
     private List<CheerImage> saveCheerImages(Cheer cheer, List<CheerRegisterImage> registerImages) {

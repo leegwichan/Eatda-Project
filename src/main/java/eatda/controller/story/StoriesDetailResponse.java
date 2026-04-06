@@ -1,5 +1,6 @@
 package eatda.controller.story;
 
+import eatda.domain.member.Member;
 import eatda.domain.story.Story;
 import java.util.List;
 
@@ -11,12 +12,12 @@ public record StoriesDetailResponse(List<StoryDetailResponse> stories) {
             long memberId,
             String memberNickname
     ) {
-        public StoryDetailResponse(Story story, List<StoryImageResponse> images) {
+        public StoryDetailResponse(Story story, Member member, List<StoryImageResponse> images) {
             this(
                     story.getId(),
                     images,
-                    story.getMember().getId(),
-                    story.getMember().getNickname());
+                    member.getId(),
+                    member.getNickname());
         }
     }
 }

@@ -1,12 +1,12 @@
 package eatda.controller.cheer;
 
-import eatda.domain.cheer.Cheer;
+import eatda.persistence.cheer.CheerInStoreResult;
 import java.util.List;
 
 public record CheersInStoreResponse(List<CheerInStoreResponse> cheers) {
 
-    public static CheersInStoreResponse from(List<Cheer> cheers) {
-        List<CheerInStoreResponse> responses = cheers.stream()
+    public static CheersInStoreResponse from(List<CheerInStoreResult> results) {
+        List<CheerInStoreResponse> responses = results.stream()
                 .map(CheerInStoreResponse::new)
                 .toList();
         return new CheersInStoreResponse(responses);
