@@ -105,9 +105,8 @@ class StoryRepositoryTest extends BaseRepositoryTest {
 
             assertAll(
                     () -> assertThat(actual).hasSize(3),
-                    () -> assertThat(actual.get(0).getStory().getId()).isEqualTo(story3.getId()),
-                    () -> assertThat(actual.get(1).getStory().getId()).isEqualTo(story2.getId()),
-                    () -> assertThat(actual.get(2).getStory().getId()).isEqualTo(story1.getId()),
+                    () -> assertThat(actual).extracting(d -> d.getStory().getId())
+                            .containsExactly(story3.getId(), story2.getId(), story1.getId()),
                     () -> assertThat(actual.get(0).getMember().getId()).isEqualTo(member1.getId()),
                     () -> assertThat(actual.get(1).getMember().getId()).isEqualTo(member2.getId()),
                     () -> assertThat(actual.get(0).getStoreId()).isEqualTo(store.getId())
