@@ -18,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,14 +32,6 @@ public class StorePersistence {
 
     public Store getStore(long storeId) {
         return storeRepository.getByIdOrThrow(storeId);
-    }
-
-    @Transactional(readOnly = true)
-    @Nullable
-    public Long getStoreIdByKakaoId(String kakaoId) {
-        return storeRepository.findByKakaoId(kakaoId)
-                .map(Store::getId)
-                .orElse(null);
     }
 
     // TODO : N+1 문제 성능 측정 필요

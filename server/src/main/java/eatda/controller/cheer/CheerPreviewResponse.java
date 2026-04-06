@@ -1,7 +1,7 @@
 package eatda.controller.cheer;
 
-import eatda.domain.cheer.Cheer;
 import eatda.domain.cheer.CheerTagName;
+import eatda.persistence.cheer.CheerPreviewResult;
 import java.util.List;
 
 public record CheerPreviewResponse(
@@ -18,19 +18,19 @@ public record CheerPreviewResponse(
         String memberNickname
 ) {
 
-    public CheerPreviewResponse(Cheer cheer, List<CheerImageResponse> images) {
+    public CheerPreviewResponse(CheerPreviewResult result, List<CheerImageResponse> images) {
         this(
-                cheer.getStore().getId(),
+                result.store().getId(),
                 images,
-                cheer.getStore().getName(),
-                cheer.getStore().getAddressDistrict(),
-                cheer.getStore().getAddressNeighborhood(),
-                cheer.getStore().getCategory().getCategoryName(),
-                cheer.getId(),
-                cheer.getDescription(),
-                cheer.getCheerTagNames(),
-                cheer.getMember().getId(),
-                cheer.getMember().getNickname()
+                result.store().getName(),
+                result.store().getAddressDistrict(),
+                result.store().getAddressNeighborhood(),
+                result.store().getCategory().getCategoryName(),
+                result.cheer().getId(),
+                result.cheer().getDescription(),
+                result.tags().getNames(),
+                result.member().getId(),
+                result.member().getNickname()
         );
     }
 }

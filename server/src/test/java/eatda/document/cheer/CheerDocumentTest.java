@@ -15,6 +15,7 @@ import static org.springframework.restdocs.request.RequestDocumentation.paramete
 import eatda.controller.cheer.CheerImageResponse;
 import eatda.controller.cheer.CheerInStoreResponse;
 import eatda.controller.cheer.CheerPreviewResponse;
+import eatda.controller.cheer.CheerRegisterImage;
 import eatda.controller.cheer.CheerRegisterRequest;
 import eatda.controller.cheer.CheerResponse;
 import eatda.controller.cheer.CheersInStoreResponse;
@@ -82,8 +83,8 @@ public class CheerDocumentTest extends BaseDocumentTest {
                     "2085990843",
                     "정말 맛있어요! 강추합니다!",
                     List.of(
-                            new CheerRegisterRequest.UploadedImageDetail("temp/1.png", 0, "image/png", 12345),
-                            new CheerRegisterRequest.UploadedImageDetail("temp/2.png", 1, "image/png", 67890)
+                            new CheerRegisterImage("temp/1.png", 0, "image/png", 12345),
+                            new CheerRegisterImage("temp/2.png", 1, "image/png", 67890)
                     ),
                     List.of(CheerTagName.GOOD_FOR_DATING, CheerTagName.CLEAN_RESTROOM)
             );
@@ -99,7 +100,7 @@ public class CheerDocumentTest extends BaseDocumentTest {
                     List.of(CheerTagName.GOOD_FOR_DATING, CheerTagName.CLEAN_RESTROOM)
             );
 
-            doReturn(response).when(cheerRegisterFacade).registerCheer(eq(request), any(), anyLong(), any());
+            doReturn(response).when(cheerService).registerCheer(eq(request), anyLong());
 
             var document = document("cheer/register", 201)
                     .request(requestDocument)
@@ -131,13 +132,12 @@ public class CheerDocumentTest extends BaseDocumentTest {
                     "123",
                     "너무 맛있어요!",
                     List.of(
-                            new CheerRegisterRequest.UploadedImageDetail("temp/1.png", 0, "image/png", 12345)
+                            new CheerRegisterImage("temp/1.png", 0, "image/png", 12345)
                     ),
                     List.of(CheerTagName.GOOD_FOR_DATING, CheerTagName.CLEAN_RESTROOM)
             );
 
-            doThrow(new BusinessException(errorCode))
-                    .when(cheerRegisterFacade).registerCheer(eq(request), any(), anyLong(), any());
+            doThrow(new BusinessException(errorCode)).when(cheerService).registerCheer(eq(request), anyLong());
 
             var document = document("cheer/register", errorCode)
                     .request(requestDocument)

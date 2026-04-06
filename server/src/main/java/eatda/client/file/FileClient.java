@@ -3,15 +3,19 @@ package eatda.client.file;
 import eatda.exception.BusinessErrorCode;
 import eatda.exception.BusinessException;
 import java.time.Duration;
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.Delete;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
+import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
@@ -36,6 +40,10 @@ public class FileClient {
         this.cdnBaseUrl = cdnBaseUrl;
     }
 
+    public String getImageUrl(String imagePath) {
+        return "https://" + cdnBaseUrl + "/" + imagePath;
+    }
+
     public String generateUploadPresignedUrl(String fileKey, Duration signatureDuration) {
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
@@ -48,63 +56,57 @@ public class FileClient {
 
         try {
             return s3Presigner.presignPutObject(presignRequest).url().toString();
-        } catch (Exception exception) {
+        } catch (SdkException exception) {
             throw new BusinessException(BusinessErrorCode.PRESIGNED_URL_GENERATION_FAILED);
         }
     }
 
-    public List<String> moveTempFilesToPermanent(String domainName, long domainId, List<String> tempImageKeys) {
-        List<String> successKeys = new ArrayList<>();
+    public FileMovingResult moveFiles(String domainName, long domainId, List<String> beforePaths) {
+        Map<String, String> moveResult = new HashMap<>();
 
         try {
-            for (String tempKey : tempImageKeys) {
-                String fileName = extractFileName(tempKey);
-                String newPermanentKey = domainName + PATH_DELIMITER + domainId + PATH_DELIMITER + fileName;
-
-                copyObject(tempKey, newPermanentKey);
-                deleteObject(tempKey);
-
-                successKeys.add(newPermanentKey);
+            for (String beforePath : beforePaths) {
+                String fileName = extractFileName(beforePath);
+                String afterPath = domainName + PATH_DELIMITER + domainId + PATH_DELIMITER + fileName;
+                copyObject(beforePath, afterPath);
+                moveResult.put(beforePath, afterPath);
             }
-            return successKeys;
+            deleteFiles(beforePaths);
         } catch (SdkException sdkException) {
-            log.error("S3 파일 이동 중 실패. 롤백 수행. successKeys={}", successKeys, sdkException);
-            deleteFiles(successKeys);
+            log.error("S3 파일 이동 중 실패. 롤백 수행. moveResult={}", moveResult, sdkException);
+            deleteFiles(moveResult.values());
             throw new BusinessException(BusinessErrorCode.FAIL_TEMP_IMAGE_PROCESS);
         }
+        return new FileMovingResult(moveResult);
     }
 
-    public void deleteFiles(List<String> keys) {
-        if (keys.isEmpty()) {
-            return;
-        }
-        keys.forEach(this::deleteObject);
+    private String extractFileName(String fullName) {
+        int index = fullName.lastIndexOf(PATH_DELIMITER);
+        return index == -1 ? fullName : fullName.substring(index + 1);
     }
 
-    public String getImageUrl(String imageKey) {
-        return "https://" + cdnBaseUrl + "/" + imageKey;
-    }
-
-    private String extractFileName(String fullKey) {
-        int index = fullKey.lastIndexOf(PATH_DELIMITER);
-        return index == -1 ? fullKey : fullKey.substring(index + 1);
-    }
-
-    private void copyObject(String sourceKey, String destinationKey) {
+    private void copyObject(String beforePath, String afterPath) {
         CopyObjectRequest copyReq = CopyObjectRequest.builder()
                 .sourceBucket(bucket)
-                .sourceKey(sourceKey)
+                .sourceKey(beforePath)
                 .destinationBucket(bucket)
-                .destinationKey(destinationKey)
+                .destinationKey(afterPath)
                 .build();
         s3Client.copyObject(copyReq);
     }
 
-    private void deleteObject(String key) {
-        DeleteObjectRequest deleteReq = DeleteObjectRequest.builder()
+    public void deleteFiles(Collection<String> paths) {
+        if (paths.isEmpty()) {
+            return;
+        }
+
+        List<ObjectIdentifier> keysToDelete = paths.stream()
+                .map(path -> ObjectIdentifier.builder().key(path).build())
+                .toList();
+        DeleteObjectsRequest multiDeleteRequest = DeleteObjectsRequest.builder()
                 .bucket(bucket)
-                .key(key)
+                .delete(Delete.builder().objects(keysToDelete).build())
                 .build();
-        s3Client.deleteObject(deleteReq);
+        s3Client.deleteObjects(multiDeleteRequest);
     }
 }

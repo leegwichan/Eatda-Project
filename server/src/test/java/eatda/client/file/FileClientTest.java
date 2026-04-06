@@ -20,8 +20,8 @@ import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
 import software.amazon.awssdk.services.s3.model.CopyObjectResponse;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsResponse;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
@@ -48,7 +48,8 @@ class FileClientTest {
         void 주어진_파일_Key에_대해_업로드용_사전_서명된_URL을_반환한다() throws MalformedURLException {
             String fileKey = "test-file-key.jpg";
             String expected = "https://example.com/test-file-key.jpg";
-            doReturn(mockPresignedRequest(expected)).when(s3Presigner).presignPutObject(any(PutObjectPresignRequest.class));
+            doReturn(mockPresignedRequest(expected)).when(s3Presigner)
+                    .presignPutObject(any(PutObjectPresignRequest.class));
 
             String actual = fileClient.generateUploadPresignedUrl(fileKey, Duration.ofMinutes(10));
 
@@ -75,22 +76,22 @@ class FileClientTest {
     }
 
     @Nested
-    class MoveTempFilesToPermanent {
+    class MoveFiles {
 
         @Test
         void 임시_파일들을_영구_위치로_이동한다() {
             String domainName = "cheer";
             long domainId = 123L;
-            List<String> tempImageKeys = List.of("temp1.jpg", "temp2.jpg");
+            List<String> tempImageKeys = List.of("temp/temp1.jpg", "temp/temp2.jpg");
 
             doReturn(CopyObjectResponse.builder().build()).when(s3Client).copyObject(any(CopyObjectRequest.class));
-            doReturn(DeleteObjectResponse.builder().build()).when(s3Client).deleteObject(any(DeleteObjectRequest.class));
+            doReturn(DeleteObjectsResponse.builder().build()).when(s3Client)
+                    .deleteObjects(any(DeleteObjectsRequest.class));
 
-            List<String> result = fileClient.moveTempFilesToPermanent(domainName, domainId, tempImageKeys);
+            FileMovingResult result = fileClient.moveFiles(domainName, domainId, tempImageKeys);
 
-            assertThat(result).hasSize(2);
-            assertThat(result.get(0)).isEqualTo("cheer/123/temp1.jpg");
-            assertThat(result.get(1)).isEqualTo("cheer/123/temp2.jpg");
+            assertThat(result.findNewPath("temp/temp1.jpg")).isEqualTo("cheer/123/temp1.jpg");
+            assertThat(result.findNewPath("temp/temp2.jpg")).isEqualTo("cheer/123/temp2.jpg");
         }
     }
 }

@@ -1,7 +1,7 @@
 package eatda.controller.cheer;
 
-import eatda.domain.cheer.Cheer;
 import eatda.domain.cheer.CheerTagName;
+import eatda.persistence.cheer.CheerDetailResult;
 import java.util.List;
 
 public record CheerResponse(
@@ -12,13 +12,13 @@ public record CheerResponse(
         List<CheerTagName> tags
 ) {
 
-    public CheerResponse(Cheer cheer, List<CheerImageResponse> images) {
+    public CheerResponse(CheerDetailResult result, List<CheerImageResponse> images) {
         this(
-                cheer.getStore().getId(),
-                cheer.getId(),
+                result.storeId(),
+                result.cheer().getId(),
                 images,
-                cheer.getDescription(),
-                cheer.getCheerTagNames()
+                result.cheer().getDescription(),
+                result.tags().getNames()
         );
     }
 }

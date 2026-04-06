@@ -4,6 +4,7 @@ import eatda.fixture.CheerGenerator;
 import eatda.fixture.CheerTagGenerator;
 import eatda.fixture.MemberGenerator;
 import eatda.fixture.StoreGenerator;
+import eatda.fixture.StoryGenerator;
 import eatda.repository.cheer.CheerRepository;
 import eatda.repository.cheer.CheerTagRepository;
 import eatda.repository.member.MemberRepository;
@@ -13,7 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 
-@Import({MemberGenerator.class, StoreGenerator.class, CheerGenerator.class, CheerTagGenerator.class})
+@Import({MemberGenerator.class, StoreGenerator.class, CheerGenerator.class, CheerTagGenerator.class,
+        StoryGenerator.class})
 @DataJpaTest
 public abstract class BaseRepositoryTest {
 
@@ -40,6 +42,9 @@ public abstract class BaseRepositoryTest {
 
     @Autowired
     protected CheerTagRepository cheerTagRepository;
+
+    @Autowired
+    protected StoryGenerator storyGenerator;
 
     @Autowired
     protected StoryRepository storyRepository;

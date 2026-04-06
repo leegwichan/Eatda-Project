@@ -374,7 +374,7 @@ public class StoreDocumentTest extends BaseDocumentTest {
                     new StoreSearchResult("456", StoreCategory.KOREAN, "010-1234-1234", "농민백암순대 시청점",
                             "https://yapp.kr", "서울 중구 북창동 19-4", null, District.JUNG, 37.0d, 128.0d)
             );
-            doReturn(responses).when(storeSearchService).searchStores(anyString());
+            doReturn(responses).when(storeService).searchStores(anyString());
 
             var document = document("store/search", 200)
                     .request(requestDocument)
@@ -394,7 +394,7 @@ public class StoreDocumentTest extends BaseDocumentTest {
         @ParameterizedTest
         void 음식점_검색_실패(BusinessErrorCode errorCode) {
             String query = "농민백암순대";
-            doThrow(new BusinessException(errorCode)).when(storeSearchService).searchStores(anyString());
+            doThrow(new BusinessException(errorCode)).when(storeService).searchStores(anyString());
 
             var document = document("store/search", errorCode)
                     .request(requestDocument)

@@ -17,7 +17,6 @@ import eatda.repository.member.MemberRepository;
 import eatda.repository.store.StoreRepository;
 import eatda.repository.story.StoryRepository;
 import eatda.service.auth.AuthService;
-import eatda.service.store.StoreSearchService;
 import eatda.service.story.StoryService;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,9 +68,6 @@ public abstract class BaseServiceTest {
 
     @Autowired
     protected StoryService storyService;
-
-    @Autowired
-    protected StoreSearchService storeSearchService;
 
     @Autowired
     protected CheerRepository cheerRepository;

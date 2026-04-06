@@ -71,7 +71,7 @@ public class StoryDocumentTest extends BaseDocumentTest {
         void 스토리_등록_성공() {
             StoryRegisterRequest request = new StoryRegisterRequest("농민백암순대", "123", "여기 진짜 맛있어요!", new ArrayList<>());
             StoryRegisterResponse response = new StoryRegisterResponse(1L);
-            doReturn(response).when(storyService).registerStory(any(), any(), any(), anyLong());
+            doReturn(response).when(storyService).registerStory(any(), anyLong());
 
             var document = document("story/register", 201)
                     .request(requestDocument)
@@ -90,7 +90,7 @@ public class StoryDocumentTest extends BaseDocumentTest {
         void 스토리_등록_실패_이미지_형식_오류() {
             StoryRegisterRequest request = new StoryRegisterRequest("농민백암순대", "123", "여기 진짜 맛있어요!", new ArrayList<>());
             doThrow(new BusinessException(BusinessErrorCode.INVALID_IMAGE_TYPE))
-                    .when(storyService).registerStory(any(), any(), any(), anyLong());
+                    .when(storyService).registerStory(any(), anyLong());
 
             var document = document("story/register", BusinessErrorCode.INVALID_IMAGE_TYPE)
                     .request(requestDocument)
@@ -123,9 +123,12 @@ public class StoryDocumentTest extends BaseDocumentTest {
                         fieldWithPath("stories[].storyId").type(JsonFieldType.NUMBER).description("스토리 ID"),
                         fieldWithPath("stories[].images").type(JsonFieldType.ARRAY).description("스토리 이미지 리스트"),
                         fieldWithPath("stories[].images[].imageKey").type(JsonFieldType.STRING).description("이미지 S3 키"),
-                        fieldWithPath("stories[].images[].orderIndex").type(JsonFieldType.NUMBER).description("이미지 노출 순서"),
-                        fieldWithPath("stories[].images[].contentType").type(JsonFieldType.STRING).description("이미지 MIME 타입"),
-                        fieldWithPath("stories[].images[].fileSize").type(JsonFieldType.NUMBER).description("이미지 파일 크기 (byte)"),
+                        fieldWithPath("stories[].images[].orderIndex").type(JsonFieldType.NUMBER)
+                                .description("이미지 노출 순서"),
+                        fieldWithPath("stories[].images[].contentType").type(JsonFieldType.STRING)
+                                .description("이미지 MIME 타입"),
+                        fieldWithPath("stories[].images[].fileSize").type(JsonFieldType.NUMBER)
+                                .description("이미지 파일 크기 (byte)"),
                         fieldWithPath("stories[].images[].url").type(JsonFieldType.STRING).description("이미지 CDN URL")
                 );
 
@@ -270,12 +273,14 @@ public class StoryDocumentTest extends BaseDocumentTest {
             StoriesInMemberResponse response = new StoriesInMemberResponse(List.of(
                     new StoryInMemberResponse(
                             1L,
-                            List.of(new StoryImageResponse("story1.png", 0L, "image/png", 12345L, "https://dummy-s3.com/story1.png")),
+                            List.of(new StoryImageResponse("story1.png", 0L, "image/png", 12345L,
+                                    "https://dummy-s3.com/story1.png")),
                             "백암순대"
                     ),
                     new StoryInMemberResponse(
                             2L,
-                            List.of(new StoryImageResponse("story2.png", 0L, "image/png", 23456L, "https://dummy-s3.com/story2.png")),
+                            List.of(new StoryImageResponse("story2.png", 0L, "image/png", 23456L,
+                                    "https://dummy-s3.com/story2.png")),
                             "맥도날드"
                     )
             ));

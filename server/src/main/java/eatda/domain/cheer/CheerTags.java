@@ -6,10 +6,16 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.OneToMany;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 @Embeddable
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class CheerTags {
 
     private static final int MAX_CHEER_TAGS_PER_TYPE = 2;
@@ -53,8 +59,12 @@ public class CheerTags {
     }
 
     public List<CheerTagName> getNames() {
+        if (values == null || values.isEmpty()) {
+            return Collections.emptyList();
+        }
         return values.stream()
                 .map(CheerTag::getName)
                 .toList();
     }
 }
+

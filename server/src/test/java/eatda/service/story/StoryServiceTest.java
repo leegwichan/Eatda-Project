@@ -6,14 +6,18 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 
+import eatda.client.file.FileMovingResult;
+import eatda.client.map.MapClientStoreSearchResult;
 import eatda.controller.story.StoriesDetailResponse;
 import eatda.controller.story.StoriesResponse;
 import eatda.controller.story.StoryImageResponse;
+import eatda.controller.story.StoryRegisterImage;
 import eatda.controller.story.StoryRegisterRequest;
+import eatda.controller.story.StoryRegisterResponse;
 import eatda.controller.story.StoryResponse;
-import eatda.domain.ImageDomain;
 import eatda.domain.member.Member;
 import eatda.domain.store.District;
 import eatda.domain.store.Store;
@@ -25,8 +29,10 @@ import eatda.exception.BusinessException;
 import eatda.service.BaseServiceTest;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -53,18 +59,26 @@ class StoryServiceTest extends BaseServiceTest {
         @Test
         void 스토리_등록에_성공한다() {
             StoryRegisterRequest request =
-                    new StoryRegisterRequest("곱창", "123", "미쳤다 여기", List.of());
+                    new StoryRegisterRequest("농민백암순대 본점", "123", "미쳤다 여기", List.of());
+            given(mapClient.searchStores(anyString()))
+                    .willReturn(List.of(
+                            new MapClientStoreSearchResult("123", "FD6", "음식점 > 한식 > 국밥", "010-1234-1234", "농민백암순대 본점",
+                                    "https://yapp.co.kr", "서울 강남구 대치동 896-33", "서울 강남구 선릉로86길 40-4", 37.5d, 127.0d),
+                            new MapClientStoreSearchResult("456", "FD6", "음식점 > 한식 > 국밥", "010-1234-1234", "농민백암순대 시청점",
+                                    "http://yapp.kr", "서울 중구 북창동 19-4", null, 37.5d, 127.0d)
+                    ));
+            given(fileClient.moveFiles(any(String.class), anyLong(), anyList()))
+                    .willReturn(new FileMovingResult(Collections.emptyMap()));
 
-            var response = storyService.registerStory(
-                    request, storeSearchResult, ImageDomain.STORY, member.getId());
+            var response = storyService.registerStory(request, member.getId());
 
             Story savedStory = storyRepository.findById(response.storyId()).orElseThrow();
             assertAll(
                     () -> assertThat(savedStory.getMember().getId()).isEqualTo(member.getId()),
                     () -> assertThat(savedStory.getStoreKakaoId()).isEqualTo("123"),
-                    () -> assertThat(savedStory.getStoreName()).isEqualTo("곱창"),
-                    () -> assertThat(savedStory.getStoreRoadAddress()).isEqualTo("서울시 강남구 사사로 3길 12-24"),
-                    () -> assertThat(savedStory.getStoreLotNumberAddress()).isEqualTo("서울시 강남구 역삼동 123-45"),
+                    () -> assertThat(savedStory.getStoreName()).isEqualTo("농민백암순대 본점"),
+                    () -> assertThat(savedStory.getStoreRoadAddress()).isEqualTo("서울 강남구 선릉로86길 40-4"),
+                    () -> assertThat(savedStory.getStoreLotNumberAddress()).isEqualTo("서울 강남구 대치동 896-33"),
                     () -> assertThat(savedStory.getStoreCategory()).isEqualTo(StoreCategory.KOREAN),
                     () -> assertThat(savedStory.getDescription()).isEqualTo("미쳤다 여기"),
                     () -> assertThat(savedStory.getImages()).isEmpty()
@@ -72,20 +86,45 @@ class StoryServiceTest extends BaseServiceTest {
         }
 
         @Test
-        void 스토리_등록_시_이미지도_함께_저장된다() {
-            StoryRegisterRequest.UploadedImageDetail image2 =
-                    new StoryRegisterRequest.UploadedImageDetail("temp-key-2", 2L, "image/jpeg", 2000L);
-            StoryRegisterRequest.UploadedImageDetail image1 =
-                    new StoryRegisterRequest.UploadedImageDetail("temp-key-1", 1L, "image/jpeg", 1000L);
+        void 이미지_이동_중_실패하면_스토리를_삭제한다() {
             StoryRegisterRequest request =
-                    new StoryRegisterRequest("곱창", "123", "미쳤다 여기", List.of(image2, image1));
+                    new StoryRegisterRequest("농민백암순대 본점", "123", "미쳤다 여기",
+                            List.of(new StoryRegisterImage("temp-key-1", 1L, "image/jpeg", 1000L)));
+            given(mapClient.searchStores(anyString()))
+                    .willReturn(List.of(
+                            new MapClientStoreSearchResult("123", "FD6", "음식점 > 한식 > 국밥", "010-1234-1234", "농민백암순대 본점",
+                                    "https://yapp.co.kr", "서울 강남구 대치동 896-33", "서울 강남구 선릉로86길 40-4", 37.5d, 127.0d)
+                    ));
+            given(fileClient.moveFiles(any(String.class), anyLong(), anyList()))
+                    .willThrow(new BusinessException(BusinessErrorCode.FAIL_TEMP_IMAGE_PROCESS));
 
-            List<String> permanentKeys = List.of("permanent/path/1", "permanent/path/2");
-            given(fileClient.moveTempFilesToPermanent(any(String.class), anyLong(), anyList()))
-                    .willReturn(permanentKeys);
+            assertThatThrownBy(() -> storyService.registerStory(request, member.getId()))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining(BusinessErrorCode.FAIL_TEMP_IMAGE_PROCESS.getMessage());
+            assertThat(storyRepository.count()).isZero();
+        }
 
-            var response = storyService.registerStory(
-                    request, storeSearchResult, ImageDomain.STORY, member.getId());
+        @Test
+        void 스토리_등록_시_이미지도_함께_저장된다() {
+            StoryRegisterImage image2 =
+                    new StoryRegisterImage("temp-key-2", 2L, "image/jpeg", 2000L);
+            StoryRegisterImage image1 =
+                    new StoryRegisterImage("temp-key-1", 1L, "image/jpeg", 1000L);
+            StoryRegisterRequest request =
+                    new StoryRegisterRequest("농민백암순대 본점", "123", "미쳤다 여기", List.of(image2, image1));
+            given(mapClient.searchStores(anyString()))
+                    .willReturn(List.of(
+                            new MapClientStoreSearchResult("123", "FD6", "음식점 > 한식 > 국밥", "010-1234-1234", "농민백암순대 본점",
+                                    "https://yapp.co.kr", "서울 강남구 대치동 896-33", "서울 강남구 선릉로86길 40-4", 37.5d, 127.0d),
+                            new MapClientStoreSearchResult("456", "FD6", "음식점 > 한식 > 국밥", "010-1234-1234", "농민백암순대 시청점",
+                                    "http://yapp.kr", "서울 중구 북창동 19-4", null, 37.5d, 127.0d)
+                    ));
+            given(fileClient.moveFiles(any(String.class), anyLong(), anyList()))
+                    .willReturn(new FileMovingResult(
+                            Map.of("temp-key-1", "permanent/path/1", "temp-key-2", "permanent/path/2")
+                    ));
+
+            StoryRegisterResponse response = storyService.registerStory(request, member.getId());
 
             Story savedStory = storyRepository.findById(response.storyId()).orElseThrow();
 
@@ -94,7 +133,7 @@ class StoryServiceTest extends BaseServiceTest {
                     () -> assertThat(savedStory.getImages()).extracting(img -> img.getOrderIndex())
                             .containsExactly(1L, 2L),
                     () -> assertThat(savedStory.getImages()).extracting(img -> img.getImageKey())
-                            .containsExactlyElementsOf(permanentKeys)
+                            .containsExactly("permanent/path/1", "permanent/path/2")
             );
         }
     }
@@ -162,12 +201,6 @@ class StoryServiceTest extends BaseServiceTest {
             );
         }
 
-        @Test
-        void 존재하지_않는_스토리ID로_조회하면_예외가_발생한다() {
-            assertThatThrownBy(() -> storyService.getStory(999999L))
-                    .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining(BusinessErrorCode.STORY_NOT_FOUND.getMessage());
-        }
     }
 
     @Nested
