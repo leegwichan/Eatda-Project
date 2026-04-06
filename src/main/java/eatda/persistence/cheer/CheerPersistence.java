@@ -21,7 +21,6 @@ import eatda.repository.store.StoreRepository;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -61,6 +60,10 @@ public class CheerPersistence {
                 parameters.getDistricts(),
                 PageRequest.of(parameters.getPage(), parameters.getSize(), Sort.by(Direction.DESC, SORTED_PROPERTIES))
         );
+        if (cheers.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         Map<Long, List<CheerTag>> tags = cheerTagRepository.findAllByCheerIn(cheers)
                 .stream()
                 .collect(Collectors.groupingBy(tag -> tag.getCheer().getId()));
@@ -71,7 +74,7 @@ public class CheerPersistence {
         return cheers.stream()
                 .map(cheer -> new CheerPreviewResult(
                         cheer, cheer.getStore(), cheer.getMember(),
-                        new CheerTags(tags.getOrDefault(cheer.getId(), new LinkedList<>())),
+                        new CheerTags(tags.getOrDefault(cheer.getId(), new ArrayList<>())),
                         images.getOrDefault(cheer.getId(), Collections.emptyList())))
                 .toList();
     }
@@ -80,6 +83,10 @@ public class CheerPersistence {
     public List<CheerInStoreResult> getCheersByStoreId(Long storeId, int page, int size) {
         Store store = storeRepository.getByIdOrThrow(storeId);
         List<Cheer> cheers = cheerRepository.findAllByStoreOrderByCreatedAtDesc(store, PageRequest.of(page, size));
+        if (cheers.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         Map<Long, List<CheerTag>> tags = cheerTagRepository.findAllByCheerIn(cheers)
                 .stream()
                 .collect(Collectors.groupingBy(tag -> tag.getCheer().getId()));
@@ -87,7 +94,7 @@ public class CheerPersistence {
         return cheers.stream()
                 .map(cheer -> new CheerInStoreResult(
                         cheer, cheer.getMember(),
-                        new CheerTags(tags.getOrDefault(cheer.getId(), new LinkedList<>()))))
+                        new CheerTags(tags.getOrDefault(cheer.getId(), new ArrayList<>()))))
                 .toList();
     }
 

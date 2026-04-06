@@ -42,6 +42,10 @@ public class StoryPersistence {
     public List<StoryPreviewResult> getStoryPreviewsByMemberId(long memberId, int page, int size) {
         List<Story> stories = storyRepository.findAllByMemberIdOrderByCreatedAtDesc(memberId,
                 PageRequest.of(page, size));
+        if (stories.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         Map<Long, List<StoryImage>> images = storyImageRepository.findAllByStoryIn(stories)
                 .stream()
                 .collect(Collectors.groupingBy(image -> image.getStory().getId()));
@@ -55,6 +59,10 @@ public class StoryPersistence {
     @Transactional(readOnly = true)
     public List<StoryPreviewResult> getRecentStoryPreviews(int size) {
         List<Story> storyIds = storyRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(PAGE_START_NUMBER, size));
+        if (storyIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         Map<Long, List<StoryImage>> images = storyImageRepository.findAllByStoryIn(storyIds)
                 .stream()
                 .collect(Collectors.groupingBy(image -> image.getStory().getId()));
@@ -66,9 +74,12 @@ public class StoryPersistence {
     }
 
     @Transactional(readOnly = true)
-    public List<StoryDetailResult> getStoryDetailsByKakaoId(String kakaoId, int size) {
+    public List<StoryDetailResult> getStoryDetailsByStoreKakaoId(String kakaoId, int size) {
         List<StoryDetail> storyDetails = storyRepository.findAllDetailsByStoreKakaoIdOrderByCreatedAtDesc(
                 kakaoId, PageRequest.of(PAGE_START_NUMBER, size));
+        if (storyDetails.isEmpty()) {
+            return Collections.emptyList();
+        }
 
         List<Story> stories = storyDetails.stream()
                 .map(StoryDetail::getStory)

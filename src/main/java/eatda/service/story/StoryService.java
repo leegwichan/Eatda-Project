@@ -57,7 +57,7 @@ public class StoryService {
     }
 
     public StoriesDetailResponse getStoriesDetails(String kakaoId, int size) {
-        List<StoryDetailResult> results = storyPersistence.getStoryDetailsByKakaoId(kakaoId, size);
+        List<StoryDetailResult> results = storyPersistence.getStoryDetailsByStoreKakaoId(kakaoId, size);
 
         List<StoryDetailResponse> responses = results.stream()
                 .map(result -> new StoryDetailResponse(result.story(), result.member(),
