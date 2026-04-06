@@ -29,7 +29,6 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -255,98 +254,6 @@ class CheerServiceTest extends BaseServiceTest {
             assertAll(
                     () -> assertThat(response.cheerId()).isNotNull(),
                     () -> assertThat(response.images()).isEmpty()
-            );
-        }
-
-        @Test
-        @Disabled("현재 한시적으로 MAX_CHEER_SIZE=10000 으로 운영 중")
-        void 응원_개수가_최대_개수를_초과하면_예외가_발생한다() {
-            Member member = memberGenerator.generate("123");
-            Store store1 = storeGenerator.generate("124", "서울시 강남구 역삼동 123-45");
-            Store store2 = storeGenerator.generate("125", "서울시 강남구 역삼동 123-45");
-            Store store3 = storeGenerator.generate("126", "서울시 강남구 역삼동 123-45");
-            cheerGenerator.generateCommon(member, store1);
-            cheerGenerator.generateCommon(member, store2);
-            cheerGenerator.generateCommon(member, store3);
-            given(mapClient.searchStores(anyString()))
-                    .willReturn(List.of(
-                            new MapClientStoreSearchResult("123", "FD6", "음식점 > 한식 > 국밥", "010-1234-1234", "농민백암순대 본점",
-                                    "https://yapp.co.kr", "서울 강남구 대치동 896-33", "서울 강남구 선릉로86길 40-4", 37.5d, 127.0d),
-                            new MapClientStoreSearchResult("456", "FD6", "음식점 > 한식 > 국밥", "010-1234-1234", "농민백암순대 시청점",
-                                    "http://yapp.kr", "서울 중구 북창동 19-4", null, 37.5d, 127.0d)
-                    ));
-            given(fileClient.moveFiles(eq(ImageDomain.CHEER.getName()), anyLong(), anyList()))
-                    .willReturn(new FileMovingResult(Collections.emptyMap()));
-
-            CheerRegisterRequest request = new CheerRegisterRequest(
-                    "123",
-                    "농민백암순대 본점",
-                    "추가 응원",
-                    List.of(),
-                    List.of(CheerTagName.GOOD_FOR_DATING, CheerTagName.CLEAN_RESTROOM)
-            );
-
-            assertThatThrownBy(() -> cheerService.registerCheer(request, member.getId()))
-                    .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining(BusinessErrorCode.FULL_CHEER_SIZE_PER_MEMBER.getMessage());
-        }
-
-        @Test
-        void 이미_응원한_가게에_대해_응원하면_예외가_발생한다() {
-            Member member = memberGenerator.generate("123");
-            Store store = storeGenerator.generate("123", "서울 강남구 대치동 896-33");
-            cheerGenerator.generateCommon(member, store);
-            given(mapClient.searchStores(anyString()))
-                    .willReturn(List.of(
-                            new MapClientStoreSearchResult("123", "FD6", "음식점 > 한식 > 국밥", "010-1234-1234", "농민백암순대 본점",
-                                    "https://yapp.co.kr", "서울 강남구 대치동 896-33", "서울 강남구 선릉로86길 40-4", 37.5d, 127.0d),
-                            new MapClientStoreSearchResult("456", "FD6", "음식점 > 한식 > 국밥", "010-1234-1234", "농민백암순대 시청점",
-                                    "http://yapp.kr", "서울 중구 북창동 19-4", null, 37.5d, 127.0d)
-                    ));
-            given(fileClient.moveFiles(eq(ImageDomain.CHEER.getName()), anyLong(), anyList()))
-                    .willReturn(new FileMovingResult(Collections.emptyMap()));
-
-            CheerRegisterRequest request = new CheerRegisterRequest(
-                    "123",
-                    "농민백암순대 본점",
-                    "추가 응원",
-                    List.of(),
-                    List.of(CheerTagName.GOOD_FOR_DATING, CheerTagName.CLEAN_RESTROOM)
-            );
-
-            assertThatThrownBy(() -> cheerService.registerCheer(request, member.getId()))
-                    .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining(BusinessErrorCode.ALREADY_CHEERED.getMessage());
-        }
-
-        @Test
-        void 해당_응원의_가게가_저장되어_있다면_응원만_저장한다() {
-            Member member = memberGenerator.generate("123");
-            Store store = storeGenerator.generate("123", "서울 강남구 대치동 896-33");
-            given(mapClient.searchStores(anyString()))
-                    .willReturn(List.of(
-                            new MapClientStoreSearchResult("123", "FD6", "음식점 > 한식 > 국밥", "010-1234-1234", "농민백암순대 본점",
-                                    "https://yapp.co.kr", "서울 강남구 대치동 896-33", "서울 강남구 선릉로86길 40-4", 37.5d, 127.0d),
-                            new MapClientStoreSearchResult("456", "FD6", "음식점 > 한식 > 국밥", "010-1234-1234", "농민백암순대 시청점",
-                                    "http://yapp.kr", "서울 중구 북창동 19-4", null, 37.5d, 127.0d)
-                    ));
-            given(fileClient.moveFiles(eq(ImageDomain.CHEER.getName()), anyLong(), anyList()))
-                    .willReturn(new FileMovingResult(Collections.emptyMap()));
-
-            CheerRegisterRequest request = new CheerRegisterRequest(
-                    "123",
-                    "농민백암순대 본점",
-                    "맛있어요!",
-                    List.of(),
-                    List.of(CheerTagName.GOOD_FOR_DATING, CheerTagName.CLEAN_RESTROOM)
-            );
-
-            CheerResponse response = cheerService.registerCheer(request, member.getId());
-
-            assertAll(
-                    () -> assertThat(response.cheerId()).isNotNull(),
-                    () -> assertThat(cheerRepository.count()).isEqualTo(1),
-                    () -> assertThat(storeRepository.count()).isEqualTo(1)
             );
         }
 

@@ -49,3 +49,6 @@ out/
 ### docker run file ###
 /src/main/resources/secret-local-docker.yml
 /src/main/resources/db/init.sql
+
+### claude code ###
+/.claude/settings.local.json
