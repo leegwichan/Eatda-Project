@@ -52,6 +52,50 @@ class StoreRepositoryTest extends BaseRepositoryTest {
     }
 
     @Nested
+    class FindStorePopularity {
+
+        @Test
+        void 가게별_응원_수를_조회할_수_있다() {
+            Member member1 = memberGenerator.generateRegisteredMember("커찬", "ac@kakao.com", "123", "01012341235");
+            Member member2 = memberGenerator.generateRegisteredMember("지민", "ad@kakao.com", "124", "01012341236");
+            Store store1 = storeGenerator.generate("1235", "서울시 강남구 역삼동 123-45");
+            Store store2 = storeGenerator.generate("1236", "서울시 강남구 역삼동 123-46");
+            cheerGenerator.generateCommon(member1, store1);
+            cheerGenerator.generateCommon(member2, store1);
+            cheerGenerator.generateCommon(member1, store2);
+
+            List<StorePopularity> actual = storeRepository.findStorePopularity(List.of(store1, store2));
+
+            assertAll(
+                    () -> assertThat(actual).hasSize(2),
+                    () -> assertThat(actual.stream().filter(p -> p.isMatchStoreId(store1)).findFirst().get().getCheerCount()).isEqualTo(2),
+                    () -> assertThat(actual.stream().filter(p -> p.isMatchStoreId(store2)).findFirst().get().getCheerCount()).isEqualTo(1)
+            );
+        }
+
+        @Test
+        void 응원이_없는_가게는_응원_수가_0이다() {
+            Store store1 = storeGenerator.generate("1235", "서울시 강남구 역삼동 123-45");
+            Store store2 = storeGenerator.generate("1236", "서울시 강남구 역삼동 123-45");
+
+            List<StorePopularity> actual = storeRepository.findStorePopularity(List.of(store1, store2));
+
+            assertAll(
+                    () -> assertThat(actual).hasSize(2),
+                    () -> assertThat(actual.stream().filter(p -> p.isMatchStoreId(store1)).findFirst().get().getCheerCount()).isZero(),
+                    () -> assertThat(actual.stream().filter(p -> p.isMatchStoreId(store2)).findFirst().get().getCheerCount()).isZero()
+            );
+        }
+
+        @Test
+        void 빈_리스트를_전달하면_빈_결과를_반환한다() {
+            List<StorePopularity> actual = storeRepository.findStorePopularity(List.of());
+
+            assertThat(actual).isEmpty();
+        }
+    }
+
+    @Nested
     class FindAllByConditions {
 
         @Test
