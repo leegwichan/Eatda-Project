@@ -41,7 +41,7 @@ services:
       SPRING_SQL_INIT_DATA_LOCATIONS: file:/app/seed/init.sql
 
       # CDN points to LocalStack S3 for image serving
-      CDN_BASE_URL: "localhost:4566/eatda-storage-local"
+      CDN_BASE_URL: "http://localhost:4566/eatda-storage-local"
     volumes:
       - ./seed/db/init.sql:/app/seed/init.sql:ro
     depends_on:
