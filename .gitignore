@@ -1,1 +1,11 @@
+# IDEA
 .idea
+
+# Claude Code
+.claude/PLAN.md
+.claude/settings.local.json
+.claude/plans
+
+# Docker secret
+docker/seed/init.sql
+docker/.env

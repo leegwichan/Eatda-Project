@@ -1,0 +1,92 @@
+-- Docker seed data for H2 (local-docker profile)
+-- Based on server/src/main/resources/db/seed/local/ but adapted for current schema (post-V9)
+
+-- Members
+INSERT INTO member (id, social_id, email, nickname, phone_number, opt_in_marketing)
+VALUES (1, '123456789', 'default1@kakao.com', '이승로', '01012345678', true),
+       (2, '987654321', 'default2@kakao.com', '이충안', '01087654321', false),
+       (3, '456789123', 'default3@kakao.com', '장수빈', '01045678912', true),
+       (4, '789123456', 'default4@kakao.com', '서준환', '01078912345', true),
+       (5, '321251287', 'default5@kakao.com', '신민선', '01034574568', false),
+       (6, '324569987', 'default6@kakao.com', '박희수', '01043609998', false),
+       (7, '323487985', 'default7@kakao.com', '하아얀', '01065083298', false);
+
+-- Stores
+INSERT INTO store (id, kakao_id, category, phone_number, name, place_url, road_address, lot_number_address, district,
+                   latitude, longitude)
+VALUES (1, '99999999999', 'KOREAN', '01012345678', '맛있는 한식집', 'https://place.map.kakao.com/17163273',
+        '서울시 강남구 역삼동 123-45', '서울시 강남구 역삼동 123-45', 'GANGNAM', 37.503708148482524, 127.05300772497776),
+       (2, '99999999998', 'WESTERN', '01087654321', '아름다운 양식집', 'https://place.map.kakao.com/17163273',
+        '서울시 강남구 역삼동 67-89', '서울시 강남구 역삼동 67-89', 'GANGNAM', 37.4979, 127.0276),
+       (3, '99999999997', 'CHINESE', '01045678912', '정통 중식당', 'https://place.map.kakao.com/17163273',
+        '서울시 강남구 역삼동 101-112', '서울시 강남구 역삼동 101-112', 'GANGNAM', 37.56259825108099, 126.97715943361476),
+       (4, '99999999996', 'WESTERN', '01078912345', '고급 양식 레스토랑', 'https://place.map.kakao.com/17163273', '',
+        '서울시 강남구 역삼동 131-415', 'GANGNAM', 37.4979, 127.0276),
+       (5, '99999999995', 'OTHER', '01034574568', '달콤한 디저트 카페', 'https://place.map.kakao.com/17163273',
+        '서울시 강남구 역삼동 161-718', '서울시 강남구 역삼동 161-718', 'GANGNAM', 37.49491300989233, 127.03150463098274),
+       (6, '99999999994', 'OTHER', '01043609998', '아늑한 커피숍', 'https://place.map.kakao.com/17163273',
+        '서울시 강남구 역삼동 192-021', '서울시 강남구 역삼동 192-021', 'GANGNAM', 37.5298343127044, 126.919484339847),
+       (7, '99999999993', 'OTHER', '01065083298', '빠른 패스트푸드점', 'https://place.map.kakao.com/17163273', '',
+        '서울시 강남구 역삼동 222-324', 'GANGNAM', 37.5036675804016, 127.05305858911);
+
+-- Cheers (image_key removed in V9, images now in cheer_image table)
+INSERT INTO cheer (id, member_id, store_id, description, is_admin)
+VALUES (1, 1, 1, '정말 맛있어요! 강추합니다!', true),
+       (2, 2, 2, '서비스가 훌륭해요!', true),
+       (3, 3, 3, '여기 음식이 정말 맛있어요!', true),
+       (4, 4, 4, '분위기가 너무 좋아요!', true),
+       (5, 5, 5, '디저트가 정말 맛있어요!', true),
+       (6, 6, 6, '커피가 정말 맛있어요!', false),
+       (7, 7, 7, '패스트푸드가 빠르고 맛있어요!', false);
+
+-- Cheer Images
+INSERT INTO cheer_image (id, cheer_id, image_key, order_index, content_type, file_size)
+VALUES (1, 1, 'cheer/1/1.jpg', 0, 'image/jpeg', 100000),
+       (2, 2, 'cheer/2/1.jpg', 0, 'image/jpeg', 100000),
+       (3, 3, 'cheer/3/1.jpg', 0, 'image/jpeg', 100000),
+       (4, 4, 'cheer/4/1.jpg', 0, 'image/jpeg', 100000),
+       (5, 5, 'cheer/5/1.jpg', 0, 'image/jpeg', 100000),
+       (6, 6, 'cheer/6/1.jpg', 0, 'image/jpeg', 100000),
+       (7, 7, 'cheer/7/1.jpg', 0, 'image/jpeg', 100000);
+
+-- Cheer Tags
+INSERT INTO cheer_tag (id, cheer_id, name)
+VALUES (1, 1, 'GOOD_FOR_FAMILY'),
+       (2, 2, 'GOOD_FOR_DATING'),
+       (3, 2, 'INSTAGRAMMABLE'),
+       (4, 4, 'QUIET'),
+       (5, 5, 'INSTAGRAMMABLE'),
+       (6, 5, 'NEAR_SUBWAY'),
+       (7, 6, 'GOOD_FOR_DATING'),
+       (8, 6, 'INSTAGRAMMABLE'),
+       (9, 6, 'CLEAN_RESTROOM'),
+       (10, 6, 'MANY_NEARBY_ATTRACTIONS'),
+       (11, 7, 'LATE_NIGHT');
+
+-- Stories (image_key removed in V9, images now in story_image table)
+INSERT INTO story (id, member_id, store_kakao_id, store_name, store_road_address, store_lot_number_address,
+                   store_category, description)
+VALUES (1, 1, '99999999999', '맛있는 한식집', '서울시 강남구 테헤란로 123', '서울시 강남구 역삼동 123-45', 'KOREAN',
+        '진짜 여기 곱창 맛집임. 다시 또 갈 듯!'),
+       (2, 2, '99999999998', '아름다운 양식집', '서울시 강남구 테헤란로 67', '서울시 강남구 역삼동 67-89', 'WESTERN',
+        '스테이크가 부드럽고 서비스도 좋아요.'),
+       (3, 3, '99999999997', '정통 중식당', '서울시 강남구 봉은사로 101', '서울시 강남구 역삼동 101-112', 'CHINESE',
+        '짜장면이 정통의 맛. 강력 추천.'),
+       (4, 4, '99999999996', '고급 양식 레스토랑', '서울시 강남구 언주로 131', '서울시 강남구 역삼동 131-415', 'WESTERN',
+        '분위기가 연인 데이트하기 좋아요.'),
+       (5, 5, '99999999995', '달콤한 디저트 카페', '서울시 강남구 논현로 161', '서울시 강남구 역삼동 161-718', 'OTHER',
+        '케이크가 촉촉하고 맛있어요.'),
+       (6, 6, '99999999994', '아늑한 카페', '서울시 강남구 선릉로 192', '서울시 강남구 역삼동 192-021', 'OTHER',
+        '조용해서 공부하기 좋아요.'),
+       (7, 7, '99999999993', '빠른 패스트푸드점', '서울시 강남구 도산대로 222', '서울시 강남구 역삼동 222-324', 'OTHER',
+        '햄버거 나오는데 3분도 안 걸림. 굿.');
+
+-- Story Images
+INSERT INTO story_image (id, story_id, image_key, order_index, content_type, file_size)
+VALUES (1, 1, 'story/1/1.jpg', 0, 'image/jpeg', 100000),
+       (2, 2, 'story/2/1.jpg', 0, 'image/jpeg', 100000),
+       (3, 3, 'story/3/1.jpg', 0, 'image/jpeg', 100000),
+       (4, 4, 'story/4/1.jpg', 0, 'image/jpeg', 100000),
+       (5, 5, 'story/5/1.jpg', 0, 'image/jpeg', 100000),
+       (6, 6, 'story/6/1.jpg', 0, 'image/jpeg', 100000),
+       (7, 7, 'story/7/1.jpg', 0, 'image/jpeg', 100000);
