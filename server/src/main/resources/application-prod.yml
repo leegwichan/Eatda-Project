@@ -59,4 +59,4 @@ kakao:
   api-key: ${KAKAO_API_KEY}
 
 cdn:
-  base-url: ${CLOUDFRONT_DOMAIN_NAME}
+  base-url: ${CLOUDFRONT_URL}
