@@ -44,6 +44,9 @@ spring:
 logging:
   config: classpath:logback-local-docker.xml
 
+dev-login:
+  enabled: ${DEV_LOGIN_ENABLED:false}
+
 jwt:
   access-token-expiration: 1h
   refresh-token-expiration: 1d
@@ -54,13 +57,13 @@ cors:
     - "http://localhost:3000"
 
 oauth:
-  client-id: ${OAUTH_CLIENT_ID}
+  client-id: ${OAUTH_CLIENT_ID:unused-in-dev-mode}
   redirect-path: /login/callback
   allowed-origins:
     - "http://localhost:3000"
 
 kakao:
-  api-key: ${KAKAO_API_KEY}
+  api-key: ${KAKAO_API_KEY:unused-in-dev-mode}
 
 cdn:
   base-url: "localhost:8080"
