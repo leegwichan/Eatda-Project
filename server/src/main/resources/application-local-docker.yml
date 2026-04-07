@@ -1,6 +1,6 @@
 spring:
   config:
-    import: secret-local-docker.yml
+    import: optional:secret-local-docker.yml
 
   datasource:
     url: jdbc:h2:mem:eatda;MODE=MySQL;DB_CLOSE_DELAY=-1
