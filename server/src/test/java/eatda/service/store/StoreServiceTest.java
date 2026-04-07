@@ -2,6 +2,8 @@ package eatda.service.store;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 
 import eatda.controller.store.ImagesResponse;
 import eatda.controller.store.StoreResponse;
@@ -121,6 +123,33 @@ class StoreServiceTest extends BaseServiceTest {
                     () -> assertThat(response.stores()).hasSize(1),
                     () -> assertThat(response.stores().get(0).id()).isEqualTo(store1.getId())
             );
+        }
+
+        @Test
+        void 썸네일_이미지가_있는_음식점은_이미지_URL을_반환한다() {
+            String expectedImageUrl = "https://cdn.example.com/dummy/image.png";
+            doReturn(expectedImageUrl).when(fileClient).getImageUrl(any());
+            Member member = memberGenerator.generate("111");
+            Store store = storeGenerator.generate("농민백암순대", "서울 강남구 대치동 896-33");
+            Cheer cheer = cheerGenerator.generateCommon(member, store);
+            cheerImageGenerator.generate(cheer);
+            StoreSearchParameters parameters = new StoreSearchParameters(0, 10, null, null, null);
+
+            StoresResponse response = storeService.getStores(parameters);
+
+            assertThat(response.stores().get(0).imageUrl()).isEqualTo(expectedImageUrl);
+        }
+
+        @Test
+        void 썸네일_이미지가_없는_음식점은_이미지_URL이_null이다() {
+            Member member = memberGenerator.generate("111");
+            Store store = storeGenerator.generate("농민백암순대", "서울 강남구 대치동 896-33");
+            cheerGenerator.generateCommon(member, store);
+            StoreSearchParameters parameters = new StoreSearchParameters(0, 10, null, null, null);
+
+            StoresResponse response = storeService.getStores(parameters);
+
+            assertThat(response.stores().get(0).imageUrl()).isNull();
         }
 
         @Test

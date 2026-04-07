@@ -52,7 +52,7 @@ class StorePersistenceTest extends BasePersistenceTest {
             assertAll(
                     () -> assertThat(actual).hasSize(1),
                     () -> assertThat(actual.get(0).store().getId()).isEqualTo(store.getId()),
-                    () -> assertThat(actual.get(0).thumbnailImageUrl()).isEqualTo("thumbnail.png"),
+                    () -> assertThat(actual.get(0).thumbnailImageKey()).isEqualTo("thumbnail.png"),
                     () -> assertThat(actual.get(0).cheerDescriptions()).hasSize(1)
             );
         }

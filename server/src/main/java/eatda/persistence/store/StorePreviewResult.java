@@ -6,7 +6,6 @@ import java.util.List;
 
 public record StorePreviewResult(
         Store store,
-        @Nullable String thumbnailImageUrl,
+        @Nullable String thumbnailImageKey,
         List<String> cheerDescriptions) {
-
 }
