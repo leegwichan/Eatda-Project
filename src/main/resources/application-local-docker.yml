@@ -66,4 +66,4 @@ kakao:
   api-key: ${KAKAO_API_KEY:unused-in-dev-mode}
 
 cdn:
-  base-url: "localhost:8080"
+  base-url: "http://localstack:4566"

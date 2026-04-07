@@ -54,4 +54,4 @@ kakao:
   api-key: ${KAKAO_API_KEY}
 
 cdn:
-  base-url: "localhost:8080"
+  base-url: "http://localhost:8080"

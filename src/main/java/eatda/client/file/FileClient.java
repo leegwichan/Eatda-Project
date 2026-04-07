@@ -41,7 +41,7 @@ public class FileClient {
     }
 
     public String getImageUrl(String imagePath) {
-        return "https://" + cdnBaseUrl + "/" + imagePath;
+        return cdnBaseUrl + "/" + imagePath;
     }
 
     public String generateUploadPresignedUrl(String fileKey, Duration signatureDuration) {
