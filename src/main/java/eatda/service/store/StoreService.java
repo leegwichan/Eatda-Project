@@ -19,6 +19,7 @@ import eatda.domain.store.StoreSearchResult;
 import eatda.persistence.store.StorePersistence;
 import eatda.persistence.store.StorePopularityResult;
 import eatda.persistence.store.StorePreviewResult;
+import jakarta.annotation.Nullable;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -42,9 +43,17 @@ public class StoreService {
 
         List<StorePreviewResponse> responses = results.stream()
                 .map(result -> new StorePreviewResponse(
-                        result.store(), result.thumbnailImageUrl(), result.cheerDescriptions()))
+                        result.store(), toImageUrl(result.thumbnailImageKey()), result.cheerDescriptions()))
                 .toList();
         return new StoresResponse(responses);
+    }
+
+    @Nullable
+    private String toImageUrl(@Nullable String imageKey) {
+        if (imageKey == null) {
+            return null;
+        }
+        return fileClient.getImageUrl(imageKey);
     }
 
     public TagsResponse getStoreTags(long storeId) {
@@ -68,11 +77,6 @@ public class StoreService {
                 .map(result -> new StoreInMemberResponse(result.store(), result.cheerCount()))
                 .toList();
         return new StoresInMemberResponse(responses);
-    }
-
-    public StoreSearchResult searchStoreByKakaoId(String name, String kakaoId) {
-        List<MapClientStoreSearchResult> searchResults = mapClient.searchStores(name);
-        return storeSearchFilter.filterStoreByKakaoId(searchResults, kakaoId);
     }
 
     public List<StoreSearchResult> searchStores(String name) {
