@@ -7,5 +7,6 @@
 .claude/plans
 
 # Docker secret
-docker/seed/init.sql
+docker/seed/db/init.sql
+docker/seed/s3/eatda-s3.zip
 docker/.env

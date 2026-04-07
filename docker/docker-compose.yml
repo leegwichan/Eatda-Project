@@ -7,7 +7,8 @@ services:
       - SERVICES=s3
       - DEFAULT_REGION=ap-northeast-2
     volumes:
-      - ./localstack/init-s3.sh:/etc/localstack/init/ready.d/init-s3.sh
+      - ./seed/init-s3.sh:/etc/localstack/init/ready.d/init-s3.sh
+      - ./seed/s3/eatda-s3.zip:/seed/eatda-s3.zip:ro
     healthcheck:
       test: ["CMD", "awslocal", "s3", "ls"]
       interval: 5s
@@ -26,8 +27,9 @@ services:
 
       # Secrets (from .env)
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-      OAUTH_CLIENT_ID: ${OAUTH_CLIENT_ID}
-      KAKAO_API_KEY: ${KAKAO_API_KEY}
+
+      # Dev login (bypass Kakao OAuth)
+      DEV_LOGIN_ENABLED: "true"
 
       # LocalStack S3 override
       SPRING_CLOUD_AWS_S3_ENDPOINT: http://localstack:4566
@@ -41,7 +43,7 @@ services:
       # CDN points to LocalStack S3 for image serving
       CDN_BASE_URL: "localhost:4566/eatda-storage-local"
     volumes:
-      - ./seed/init.sql:/app/seed/init.sql:ro
+      - ./seed/db/init.sql:/app/seed/init.sql:ro
     depends_on:
       localstack:
         condition: service_healthy
