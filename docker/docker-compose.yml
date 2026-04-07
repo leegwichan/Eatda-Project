@@ -60,6 +60,7 @@ services:
       dockerfile: ../docker/Dockerfile.web
       args:
         NEXT_PUBLIC_API_URL: http://localhost:8080
+        NEXT_PUBLIC_DEV_LOGIN_ENABLED: "true"
     ports:
       - "3000:3000"
     environment:
