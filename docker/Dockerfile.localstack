@@ -1,0 +1,3 @@
+FROM localstack/localstack:3
+COPY seed/init-s3.sh /etc/localstack/init/ready.d/init-s3.sh
+COPY seed/s3/eatda-s3.zip /seed/eatda-s3.zip

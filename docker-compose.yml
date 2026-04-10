@@ -1,49 +1,32 @@
 services:
   localstack:
-    image: localstack/localstack:3
+    image: keochan/eatda-localstack:latest
     ports:
       - "4566:4566"
     environment:
       - SERVICES=s3
       - DEFAULT_REGION=ap-northeast-2
-    volumes:
-      - ./seed/init-s3.sh:/etc/localstack/init/ready.d/init-s3.sh
-      - ./seed/s3/eatda-s3.zip:/seed/eatda-s3.zip:ro
     healthcheck:
       test: ["CMD", "awslocal", "s3", "ls"]
       interval: 5s
       timeout: 5s
       retries: 10
+      start_period: 60s
 
   server:
-    build:
-      context: ../server
-      dockerfile: ../docker/Dockerfile.server
+    image: keochan/eatda-server:latest
     ports:
       - "8080:8080"
     environment:
-      # Spring profile
       SPRING_PROFILES_ACTIVE: local-docker
-
-      # Secrets (from .env)
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-
-      # Dev login (bypass Kakao OAuth)
+      JWT_SECRET_KEY: local-dev-jwt-secret-key-min-32-chars-eatda
       DEV_LOGIN_ENABLED: "true"
-
-      # LocalStack S3 override
       SPRING_CLOUD_AWS_S3_ENDPOINT: http://localstack:4566
       SPRING_CLOUD_AWS_S3_PATH_STYLE_ACCESS_ENABLED: "true"
       SPRING_CLOUD_AWS_CREDENTIALS_ACCESS_KEY: test
       SPRING_CLOUD_AWS_CREDENTIALS_SECRET_KEY: test
-
-      # Seed data location (mounted volume)
       SPRING_SQL_INIT_DATA_LOCATIONS: file:/app/seed/init.sql
-
-      # CDN points to LocalStack S3 for image serving
-      CDN_BASE_URL: "http://localhost:4566/eatda-storage-local"
-    volumes:
-      - ./seed/db/init.sql:/app/seed/init.sql:ro
+      CDN_BASE_URL: "http://localstack:4566/eatda-storage-local"
     depends_on:
       localstack:
         condition: service_healthy
@@ -55,19 +38,13 @@ services:
       start_period: 30s
 
   web:
-    build:
-      context: ../web
-      dockerfile: ../docker/Dockerfile.web
-      args:
-        NEXT_PUBLIC_API_URL: http://localhost:8080
-        NEXT_PUBLIC_DEV_LOGIN_ENABLED: "true"
+    image: keochan/eatda-web:latest
     ports:
       - "3000:3000"
     environment:
-      # SSR API calls use Docker internal DNS
       INTERNAL_API_URL: http://server:8080
-      SESSION_PASSWORD: ${SESSION_PASSWORD}
-      ORIGIN_VERIFY: ${ORIGIN_VERIFY}
+      SESSION_PASSWORD: local-dev-session-password-32chars-eatda
+      ORIGIN_VERIFY: local-dev-origin-verify-token-eatda
       HOSTNAME: 0.0.0.0
     depends_on:
       server:
