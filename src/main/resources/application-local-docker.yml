@@ -44,9 +44,6 @@ spring:
 logging:
   config: classpath:logback-local-docker.xml
 
-local-docker:
-  enabled: ${LOCAL_DOCKER_ENABLED:true}
-
 jwt:
   access-token-expiration: 1h
   refresh-token-expiration: 1d
@@ -62,8 +59,14 @@ oauth:
   allowed-origins:
     - "http://localhost:3000"
 
+local-docker:
+  enabled: ${LOCAL_DOCKER_ENABLED:true}
+
 kakao:
   api-key: ${KAKAO_API_KEY:unused-in-dev-mode}
+
+s3:
+  presigned-base-url: ${S3_PRESIGNED_BASE_URL:}
 
 cdn:
   base-url: "http://localhost:4566"
