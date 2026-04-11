@@ -27,8 +27,8 @@ services:
       SPRING_CLOUD_AWS_CREDENTIALS_ACCESS_KEY: test
       SPRING_CLOUD_AWS_CREDENTIALS_SECRET_KEY: test
       SPRING_SQL_INIT_DATA_LOCATIONS: file:/app/seed/init.sql
-      CDN_BASE_URL: "http://localstack:4566/eatda-storage-local"
-      S3_PRESIGNED_BASE_URL: "http://localhost:4566"
+      LOCALSTACK_EXTERNAL_URL: http://localhost:4566
+      LOCALSTACK_INTERNAL_URL: http://localstack:4566
     depends_on:
       localstack:
         condition: service_healthy
