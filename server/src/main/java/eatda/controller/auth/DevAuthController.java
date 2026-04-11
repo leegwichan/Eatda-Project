@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "dev-login.enabled", havingValue = "true")
+@ConditionalOnProperty(name = "local-docker.enabled", havingValue = "true")
 @EnableConfigurationProperties(DevLoginProperties.class)
 public class DevAuthController {
 
