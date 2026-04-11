@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -48,7 +49,11 @@ public class LocalStackFileClient implements FileClient {
 
     @Override
     public String getImageUrl(String imagePath) {
-        return externalUrl + "/" + imagePath;
+        return new StringJoiner(PATH_DELIMITER)
+                .add(externalUrl)
+                .add(bucket)
+                .add(imagePath)
+                .toString();
     }
 
     @Override
@@ -64,8 +69,7 @@ public class LocalStackFileClient implements FileClient {
 
         try {
             String url = s3Presigner.presignPutObject(presignRequest).url().toString();
-            url = url.replace(internalUrl, externalUrl);
-            return url;
+            return url.replace(internalUrl, externalUrl); // LocalStack에서 서명 검증 엄격하게 안함
         } catch (SdkException exception) {
             throw new BusinessException(BusinessErrorCode.PRESIGNED_URL_GENERATION_FAILED);
         }

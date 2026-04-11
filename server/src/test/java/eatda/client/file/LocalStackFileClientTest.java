@@ -39,17 +39,17 @@ class LocalStackFileClientTest {
         this.s3Client = mock(S3Client.class);
         this.s3Presigner = mock(S3Presigner.class);
         this.fileClient = new LocalStackFileClient(
-                s3Client, "test-bucket", s3Presigner, "http://localhost:4566", "http://localhost:4566");
+                s3Client, "test-bucket", s3Presigner, "http://localhost:4566", "http://localstack:4566");
     }
 
     @Nested
     class GetImageUrl {
 
         @Test
-        void CDN_base_url과_이미지_경로를_조합하여_URL을_반환한다() {
+        void externalUrl과_bucket과_이미지_경로를_조합하여_URL을_반환한다() {
             String actual = fileClient.getImageUrl("cheer/123/image.jpg");
 
-            assertThat(actual).isEqualTo("http://localhost:4566/cheer/123/image.jpg");
+            assertThat(actual).isEqualTo("http://localhost:4566/test-bucket/cheer/123/image.jpg");
         }
     }
 
@@ -57,9 +57,9 @@ class LocalStackFileClientTest {
     class GenerateUploadPresignedUrl {
 
         @Test
-        void presignedBaseUrl이_설정되면_호스트를_치환하여_반환한다() throws MalformedURLException {
+        void internalUrl을_externalUrl로_치환하여_반환한다() throws MalformedURLException {
             String fileKey = "test-file-key.jpg";
-            String originalUrl = "https://s3.localhost.localstack.cloud:4566/test-bucket/test-file-key.jpg";
+            String originalUrl = "http://localstack:4566/test-bucket/test-file-key.jpg";
             doReturn(mockPresignedRequest(originalUrl)).when(s3Presigner)
                     .presignPutObject(any(PutObjectPresignRequest.class));
 
@@ -69,15 +69,13 @@ class LocalStackFileClientTest {
         }
 
         @Test
-        void presignedBaseUrl이_비어있으면_원본_URL을_그대로_반환한다() throws MalformedURLException {
-            LocalStackFileClient clientWithoutBaseUrl = new LocalStackFileClient(
-                    s3Client, "test-bucket", s3Presigner, "http://localhost:4566", "");
+        void internalUrl이_포함되지_않으면_원본_URL을_그대로_반환한다() throws MalformedURLException {
             String fileKey = "test-file-key.jpg";
-            String expected = "https://s3.localhost.localstack.cloud:4566/test-bucket/test-file-key.jpg";
+            String expected = "https://s3.amazonaws.com/test-bucket/test-file-key.jpg";
             doReturn(mockPresignedRequest(expected)).when(s3Presigner)
                     .presignPutObject(any(PutObjectPresignRequest.class));
 
-            String actual = clientWithoutBaseUrl.generateUploadPresignedUrl(fileKey, Duration.ofMinutes(10));
+            String actual = fileClient.generateUploadPresignedUrl(fileKey, Duration.ofMinutes(10));
 
             assertThat(actual).isEqualTo(expected);
         }
