@@ -50,7 +50,7 @@ public class LocalStackFileClient implements FileClient {
     @Override
     public String getImageUrl(String imagePath) {
         return new StringJoiner(PATH_DELIMITER)
-                .add(externalUrl)
+                .add(internalUrl)
                 .add(bucket)
                 .add(imagePath)
                 .toString();

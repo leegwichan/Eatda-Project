@@ -49,7 +49,7 @@ class LocalStackFileClientTest {
         void externalUrl과_bucket과_이미지_경로를_조합하여_URL을_반환한다() {
             String actual = fileClient.getImageUrl("cheer/123/image.jpg");
 
-            assertThat(actual).isEqualTo("http://localhost:4566/test-bucket/cheer/123/image.jpg");
+            assertThat(actual).isEqualTo("http://localstack:4566/test-bucket/cheer/123/image.jpg");
         }
     }
 
