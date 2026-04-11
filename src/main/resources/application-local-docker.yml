@@ -44,8 +44,8 @@ spring:
 logging:
   config: classpath:logback-local-docker.xml
 
-dev-login:
-  enabled: ${DEV_LOGIN_ENABLED:false}
+local-docker:
+  enabled: ${LOCAL_DOCKER_ENABLED:true}
 
 jwt:
   access-token-expiration: 1h

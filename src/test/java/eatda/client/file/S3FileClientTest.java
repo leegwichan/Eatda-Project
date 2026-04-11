@@ -6,6 +6,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import eatda.exception.BusinessErrorCode;
 import eatda.exception.BusinessException;
@@ -26,19 +28,28 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
-class FileClientTest {
+class S3FileClientTest {
 
     private S3Client s3Client;
-    private String bucket;
     private S3Presigner s3Presigner;
-    private FileClient fileClient;
+    private S3FileClient fileClient;
 
     @BeforeEach
     void setUp() {
         this.s3Client = mock(S3Client.class);
-        this.bucket = "test-bucket";
         this.s3Presigner = mock(S3Presigner.class);
-        this.fileClient = new FileClient(s3Client, bucket, s3Presigner, "cdn.example.com");
+        this.fileClient = new S3FileClient(s3Client, "test-bucket", s3Presigner, "https://cdn.example.com");
+    }
+
+    @Nested
+    class GetImageUrl {
+
+        @Test
+        void CDN_base_url과_이미지_경로를_조합하여_URL을_반환한다() {
+            String actual = fileClient.getImageUrl("cheer/123/image.jpg");
+
+            assertThat(actual).isEqualTo("https://cdn.example.com/cheer/123/image.jpg");
+        }
     }
 
     @Nested
@@ -47,19 +58,13 @@ class FileClientTest {
         @Test
         void 주어진_파일_Key에_대해_업로드용_사전_서명된_URL을_반환한다() throws MalformedURLException {
             String fileKey = "test-file-key.jpg";
-            String expected = "https://example.com/test-file-key.jpg";
+            String expected = "https://s3.amazonaws.com/test-bucket/test-file-key.jpg";
             doReturn(mockPresignedRequest(expected)).when(s3Presigner)
                     .presignPutObject(any(PutObjectPresignRequest.class));
 
             String actual = fileClient.generateUploadPresignedUrl(fileKey, Duration.ofMinutes(10));
 
             assertThat(actual).isEqualTo(expected);
-        }
-
-        private PresignedPutObjectRequest mockPresignedRequest(String url) throws MalformedURLException {
-            PresignedPutObjectRequest request = mock(PresignedPutObjectRequest.class);
-            doReturn(new URL(url)).when(request).url();
-            return request;
         }
 
         @Test
@@ -72,6 +77,12 @@ class FileClientTest {
                     () -> fileClient.generateUploadPresignedUrl(fileKey, Duration.ofMinutes(10)));
 
             assertThat(exception.getErrorCode()).isEqualTo(BusinessErrorCode.PRESIGNED_URL_GENERATION_FAILED);
+        }
+
+        private PresignedPutObjectRequest mockPresignedRequest(String url) throws MalformedURLException {
+            PresignedPutObjectRequest request = mock(PresignedPutObjectRequest.class);
+            doReturn(new URL(url)).when(request).url();
+            return request;
         }
     }
 
@@ -92,6 +103,45 @@ class FileClientTest {
 
             assertThat(result.findNewPath("temp/temp1.jpg")).isEqualTo("cheer/123/temp1.jpg");
             assertThat(result.findNewPath("temp/temp2.jpg")).isEqualTo("cheer/123/temp2.jpg");
+        }
+
+        @Test
+        void 파일_복사_중_실패하면_롤백_후_예외를_던진다() {
+            String domainName = "cheer";
+            long domainId = 123L;
+            List<String> tempImageKeys = List.of("temp/temp1.jpg", "temp/temp2.jpg");
+
+            doReturn(CopyObjectResponse.builder().build())
+                    .doThrow(SdkClientException.create("copy failed"))
+                    .when(s3Client).copyObject(any(CopyObjectRequest.class));
+            doReturn(DeleteObjectsResponse.builder().build()).when(s3Client)
+                    .deleteObjects(any(DeleteObjectsRequest.class));
+
+            BusinessException exception = assertThrows(BusinessException.class,
+                    () -> fileClient.moveFiles(domainName, domainId, tempImageKeys));
+
+            assertThat(exception.getErrorCode()).isEqualTo(BusinessErrorCode.FAIL_TEMP_IMAGE_PROCESS);
+        }
+    }
+
+    @Nested
+    class DeleteFiles {
+
+        @Test
+        void 파일_경로_목록으로_삭제_요청을_보낸다() {
+            doReturn(DeleteObjectsResponse.builder().build()).when(s3Client)
+                    .deleteObjects(any(DeleteObjectsRequest.class));
+
+            fileClient.deleteFiles(List.of("cheer/123/image1.jpg", "cheer/123/image2.jpg"));
+
+            verify(s3Client).deleteObjects(any(DeleteObjectsRequest.class));
+        }
+
+        @Test
+        void 빈_목록이면_삭제_요청을_보내지_않는다() {
+            fileClient.deleteFiles(List.of());
+
+            verify(s3Client, never()).deleteObjects(any(DeleteObjectsRequest.class));
         }
     }
 }
