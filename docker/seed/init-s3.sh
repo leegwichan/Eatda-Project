@@ -18,6 +18,19 @@ awslocal s3api put-bucket-policy --bucket eatda-storage-local --policy '{
 }'
 echo "Bucket policy applied."
 
+echo "Setting bucket CORS configuration..."
+awslocal s3api put-bucket-cors --bucket eatda-storage-local --cors-configuration '{
+  "CORSRules": [
+    {
+      "AllowedOrigins": ["http://localhost:3000"],
+      "AllowedMethods": ["GET", "PUT"],
+      "AllowedHeaders": ["*"],
+      "MaxAgeSeconds": 3600
+    }
+  ]
+}'
+echo "Bucket CORS configuration applied."
+
 SEED_ZIP="/seed/eatda-s3.zip"
 if [ ! -f "$SEED_ZIP" ]; then
   echo "WARNING: $SEED_ZIP not found. Skipping S3 seed data upload."
