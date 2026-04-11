@@ -2,7 +2,6 @@ package eatda.client.file;
 
 import eatda.exception.BusinessErrorCode;
 import eatda.exception.BusinessException;
-import java.net.URI;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.HashMap;
@@ -28,27 +27,28 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 public class LocalStackFileClient implements FileClient {
 
     private static final String PATH_DELIMITER = "/";
+
     private final S3Client s3Client;
     private final String bucket;
     private final S3Presigner s3Presigner;
-    private final String cdnBaseUrl;
-    private final String presignedBaseUrl;
+    private final String externalUrl;
+    private final String internalUrl;
 
     public LocalStackFileClient(S3Client s3Client,
                                 @Value("${spring.cloud.aws.s3.bucket}") String bucket,
                                 S3Presigner s3Presigner,
-                                @Value("${cdn.base-url}") String cdnBaseUrl,
-                                @Value("${s3.presigned-base-url:}") String presignedBaseUrl) {
+                                @Value("${localstack.external-url}") String externalUrl,
+                                @Value("${localstack.internal-url}") String internalUrl) {
         this.s3Client = s3Client;
         this.bucket = bucket;
         this.s3Presigner = s3Presigner;
-        this.cdnBaseUrl = cdnBaseUrl;
-        this.presignedBaseUrl = presignedBaseUrl;
+        this.externalUrl = externalUrl;
+        this.internalUrl = internalUrl;
     }
 
     @Override
     public String getImageUrl(String imagePath) {
-        return cdnBaseUrl + "/" + imagePath;
+        return externalUrl + "/" + imagePath;
     }
 
     @Override
@@ -64,11 +64,7 @@ public class LocalStackFileClient implements FileClient {
 
         try {
             String url = s3Presigner.presignPutObject(presignRequest).url().toString();
-            if (presignedBaseUrl != null && !presignedBaseUrl.isBlank()) {
-                URI originalUri = URI.create(url);
-                String originalBase = originalUri.getScheme() + "://" + originalUri.getAuthority();
-                url = url.replace(originalBase, presignedBaseUrl);
-            }
+            url = url.replace(internalUrl, externalUrl);
             return url;
         } catch (SdkException exception) {
             throw new BusinessException(BusinessErrorCode.PRESIGNED_URL_GENERATION_FAILED);
