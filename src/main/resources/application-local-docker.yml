@@ -59,14 +59,12 @@ oauth:
   allowed-origins:
     - "http://localhost:3000"
 
-local-docker:
-  enabled: ${LOCAL_DOCKER_ENABLED:true}
-
 kakao:
   api-key: ${KAKAO_API_KEY:unused-in-dev-mode}
 
-s3:
-  presigned-base-url: ${S3_PRESIGNED_BASE_URL:}
+local-docker:
+  enabled: ${LOCAL_DOCKER_ENABLED:true}
 
-cdn:
-  base-url: "http://localhost:4566"
+localstack:
+  external-url: ${LOCALSTACK_EXTERNAL_URL:http://localhost:4566}
+  internal-url: ${LOCALSTACK_INTERNAL_URL:http://localstack:4566}
